@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      xmlns="http://javafx.com/javafx"
+      fx:controller="ru.geekbrains.chat_client.ClientController"
+      prefHeight="600.0" prefWidth="800.0">
+    <MenuBar>
+        <Menu text="Chat">
+            <MenuItem onAction="#Dummy" text="Connect" />
+            <MenuItem onAction="#clearChat" text="Clear" />
+            <MenuItem onAction="#closeProgram" text="Exit" />
+        </Menu>
+        <Menu text="Settings">
+            <MenuItem onAction="#Dummy" text="Settings1" />
+            <MenuItem onAction="#Dummy" text="Settings2" />
+            <MenuItem onAction="#Dummy" text="Settings3" />
+        </Menu>
+        <Menu text="Help">
+            <MenuItem onAction="#Dummy" text="Quick Guide" />
+            <MenuItem onAction="#toGitHubPage" text="Go to GitHub page" />
+            <MenuItem onAction="#openAboutWindow" text="About" />
+        </Menu>
+    </MenuBar>
+    <HBox VBox.vgrow="ALWAYS">
+        <TextArea fx:id="chatArea" editable="false" wrapText="true" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="300.0">
+            <HBox.margin>
+                <Insets left="5.0" right="5.0" top="5.0" />
+            </HBox.margin>
+        </TextArea>
+        <ListView fx:id="onlineUsers" minWidth="150.0" prefWidth="150.0">
+            <HBox.margin>
+                <Insets right="5.0" top="5.0" />
+            </HBox.margin>
+        </ListView>
+    </HBox>
+    <HBox>
+        <TextArea fx:id="userMessage" minWidth="300.0" prefHeight="70.0" wrapText="true" HBox.hgrow="ALWAYS"  onKeyReleased="#userMessageUtilityKeyHandler">
+            <HBox.margin>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </HBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </TextArea>
+        <Button fx:id="sendButton" minWidth="150.0" onAction="#sendMessageBySendButton" prefHeight="70.0" prefWidth="150.0" text="SEND">
+            <HBox.margin>
+                <Insets bottom="5.0" right="5.0" top="5.0" />
+            </HBox.margin>
+        </Button>
+    </HBox>
+</VBox>
