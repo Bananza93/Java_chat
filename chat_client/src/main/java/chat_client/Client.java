@@ -1,4 +1,4 @@
-package ru.geekbrains.chat_client;
+package chat_client;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;

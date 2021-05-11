@@ -7,7 +7,7 @@
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       xmlns="http://javafx.com/javafx"
-      fx:controller="ru.geekbrains.chat_client.ClientController"
+      fx:controller="chat_client.ClientController"
       prefHeight="600.0" prefWidth="800.0">
     <MenuBar>
         <Menu text="Chat">

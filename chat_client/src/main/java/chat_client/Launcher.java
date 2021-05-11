@@ -1,4 +1,4 @@
-package ru.geekbrains.chat_client;
+package chat_client;
 
 public class Launcher {
     public static void main(String[] args) {
