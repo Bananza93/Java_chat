@@ -1,5 +1,7 @@
 package ru.geekbrains.chat_server;
 
+import ru.geekbrains.chat_common.Message;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -29,12 +31,27 @@ public class SessionHandler {
         new Thread(() -> {
             try {
                 while(!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
-                    String msg = inputStream.readUTF();
-                    System.out.printf("Client #%d: %s\n", this.clientNumber, msg);
+                    String rawMessage = inputStream.readUTF();
+                    Message message = Message.messageFromJson(rawMessage);
+                    switch (message.getMessageType()) {
+                        case PUBLIC -> sendPublicMessage();
+                        case PRIVATE -> sendPrivateMessage();
+                        case AUTH_REQUEST -> authenticateUser();
+                        default -> System.out.println("Incorrect message type: " + message.getMessageType());
+                    }
                 }
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    private void authenticateUser() {
+    }
+
+    private void sendPrivateMessage() {
+    }
+
+    private void sendPublicMessage() {
     }
 }
