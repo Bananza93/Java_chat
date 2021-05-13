@@ -14,8 +14,8 @@ public class ChatServer {
             while (true) {
                 System.out.println("Waiting for connection");
                 Socket socket = serverSocket.accept();
-                System.out.println("Client connected (IP: " + socket.getInetAddress() + ")");
-                new SessionHandler(socket, this).handle();
+                System.out.println("Client connected (IP: " + socket.getInetAddress().getHostAddress() + ")");
+                new SessionHandler(socket).handle();
             }
         } catch (IOException e) {
             e.printStackTrace();

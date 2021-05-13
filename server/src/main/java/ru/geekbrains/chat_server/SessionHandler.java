@@ -9,13 +9,11 @@ public class SessionHandler {
     static int clientCounter = 0;
     private int clientNumber;
     private Socket socket;
-    private ChatServer chatServer;
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
 
-    public SessionHandler(Socket socket, ChatServer chatServer) {
+    public SessionHandler(Socket socket) {
         try {
-            this.chatServer = chatServer;
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
