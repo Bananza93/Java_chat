@@ -30,18 +30,22 @@ public class SimpleAuthServer implements AuthServer {
 
     @Override
     public void start() {
-        try (ServerSocket authServerSocket = new ServerSocket(PORT)) {
-            System.out.println("Auth server started");
-            socket = authServerSocket.accept();
-            in = new DataInputStream(socket.getInputStream());
-            out = new DataOutputStream(socket.getOutputStream());
-            while (true) {
-                String rawMessage = in.readUTF();
-                System.out.println(rawMessage);
+        new Thread(() -> {
+            try (ServerSocket authServerSocket = new ServerSocket(PORT)) {
+                System.out.println("Auth server started");
+                socket = authServerSocket.accept();
+                in = new DataInputStream(socket.getInputStream());
+                out = new DataOutputStream(socket.getOutputStream());
+                while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
+                /*String rawMessage = in.readUTF();
+                System.out.println("FROM SERVER: " + rawMessage);*/
+                    System.out.println("FROM AUTH SERVER");
+                    Thread.sleep(2000);
+                }
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
 
     @Override

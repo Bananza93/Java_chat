@@ -23,27 +23,32 @@ public class ChatServer {
                 System.out.println("Client connected (IP: " + socket.getInetAddress().getHostAddress() + ")");
                 new SessionHandler(socket).handle();
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private void startAuthServer() throws IOException {
+    private void startAuthServer() throws IOException, InterruptedException {
         authServer = new SimpleAuthServer();
-        new Thread(() -> authServer.start());
-
+        authServer.start();
+//        System.out.println("AFTER CREATING THREAD");
+//        Thread.sleep(5000);
         authServerSocket = new Socket("localhost", 22222);
         fromAuthServer = new DataInputStream(authServerSocket.getInputStream());
         toAuthServer = new DataOutputStream(authServerSocket.getOutputStream());
+        System.out.println("BEFORE NEW THREAD");
         new Thread(() -> {
             try {
+                System.out.println("INSIDE NEW THREAD");
                 while (!Thread.currentThread().isInterrupted()) {
-                    String msg = fromAuthServer.readUTF();
-                    System.out.println("FROM AUTH: " + msg);
+                    /*String msg = fromAuthServer.readUTF();
+                    System.out.println("FROM AUTH: " + msg);*/
+                    System.out.println("FROM SERVER");
+                    Thread.sleep(2000);
                 }
-            } catch (IOException e) {
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        });
+        }).start();
     }
 }
