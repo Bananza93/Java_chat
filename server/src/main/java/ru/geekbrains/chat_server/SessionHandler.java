@@ -8,8 +8,6 @@ import java.io.IOException;
 import java.net.Socket;
 
 public class SessionHandler {
-    static int clientCounter = 0;
-    private int clientNumber;
     private Socket socket;
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
@@ -20,7 +18,6 @@ public class SessionHandler {
             this.socket = socket;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
-            this.clientNumber = ++clientCounter;
             System.out.println("Handler created.");
         } catch (IOException e) {
             e.printStackTrace();
@@ -44,6 +41,14 @@ public class SessionHandler {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    public void sendMessage(String jsonMessage) {
+        try {
+            outputStream.writeUTF(jsonMessage);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void authenticateUser() {
