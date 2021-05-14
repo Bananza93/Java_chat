@@ -1,9 +1,8 @@
 package ru.geekbrains.server.auth_server;
 
-import ru.geekbrains.server.chat_server.ChatServerSessionHandler;
-import ru.geekbrains.server.chat_server.Server;
+import ru.geekbrains.chat_common.User;
+import ru.geekbrains.server.utils.Server;
 
 public interface AuthServer extends Server {
-    void authorizeUser(String jsonMessage, ChatServerSessionHandler userSession);
-
+    User getUserByLoginAndPassword(String login, String password);
 }

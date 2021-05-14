@@ -1,9 +1,7 @@
 package ru.geekbrains.server.auth_server;
 
 import ru.geekbrains.chat_common.User;
-import ru.geekbrains.server.chat_server.ChatServerSessionHandler;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -12,31 +10,35 @@ import java.util.List;
 
 public class SimpleAuthServer implements AuthServer {
 
-    private static final int PORT = 22222;
-    private Socket socket;
-    private DataInputStream in;
-    private DataOutputStream out;
-    private List<User> users;
+    private static final int AUTH_SERVER_PORT = 22222;
+    private static final String CHAT_SERVER_HOST = "localhost";
+    private static final int CHAT_SERVER_PORT = 11111;
+
     private Socket chatServerSocket;
-    private boolean isConnectedToChatServer = false;
+    private DataOutputStream toChatServer;
+    private boolean isConnectedToChatServer;
+
+    private List<User> tempUserDatabase;
+
 
     public SimpleAuthServer() {
-        users = List.of(new User("user1", "log1", "pass"),
+        tempUserDatabase = List.of(new User("user1", "log1", "pass"),
                 new User("user2", "log2", "pass"),
                 new User("user3", "log3", "pass")
         );
+        isConnectedToChatServer = false;
     }
 
     @Override
     public void start() {
-        try (ServerSocket authServerSocket = new ServerSocket(PORT)) {
+        try (ServerSocket authServerSocket = new ServerSocket(AUTH_SERVER_PORT)) {
             System.out.println("Auth server started");
             connectToChatServer();
             while (true) {
-
-                socket = authServerSocket.accept();
-                String rawMessage = in.readUTF();
-                //System.out.println("FROM SERVER: " + rawMessage);
+                System.out.println("Waiting for connection");
+                Socket socket = authServerSocket.accept();
+                System.out.println("Client connected (IP: " + socket.getInetAddress().getHostAddress() + ")");
+                new AuthServerSessionHandler(socket, this).handle();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -48,16 +50,14 @@ public class SimpleAuthServer implements AuthServer {
 
     }
 
-    @Override
-    public void authorizeUser(String jsonMessage, ChatServerSessionHandler userSession) {
 
-    }
 
     private void connectToChatServer() {
         Thread t = new Thread(() -> {
             while (true) {
                 try {
-                    chatServerSocket = new Socket("localhost", 11111);
+                    chatServerSocket = new Socket(CHAT_SERVER_HOST, CHAT_SERVER_PORT);
+                    toChatServer = new DataOutputStream(chatServerSocket.getOutputStream());
                     isConnectedToChatServer = true;
                     checkConnectionWithChatServer();
                     break;
@@ -83,5 +83,27 @@ public class SimpleAuthServer implements AuthServer {
         });
         t.setDaemon(true);
         t.start();
+    }
+
+    @Override
+    public User getUserByLoginAndPassword(String login, String password) {
+        for (User user : tempUserDatabase) {
+            if (user.getLogin().equals(login) && user.getPassword().equals(password)) {
+                return user;
+            }
+        }
+        return null;
+    }
+
+    public Socket getChatServerSocket() {
+        return chatServerSocket;
+    }
+
+    public DataOutputStream getToChatServer() {
+        return toChatServer;
+    }
+
+    public boolean isConnectedToChatServer() {
+        return isConnectedToChatServer;
     }
 }

@@ -1,4 +1,4 @@
-package ru.geekbrains.server.chat_server;
+package ru.geekbrains.server.utils;
 
 public interface Server {
     void start();

@@ -2,7 +2,6 @@ package ru.geekbrains.chat_common;
 
 import com.google.gson.Gson;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -14,16 +13,17 @@ public class Message {
     private User toUser;
     private Date messageDate;
 
+    public Message() {
+    }
+
     public Message(MessageType messageType, String messageBody) {
         this.messageType = messageType;
         this.messageBody = messageBody;
-        this.messageDate = new Date();
     }
 
     public Message(MessageType messageType, List<?> messageUtilList) {
         this.messageType = messageType;
         this.messageUtilList = messageUtilList;
-        this.messageDate = new Date();
     }
 
     public String messageToJson() {
