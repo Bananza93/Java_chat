@@ -1,28 +1,19 @@
 package ru.geekbrains.server.chat_server;
 
 import ru.geekbrains.chat_common.User;
-import ru.geekbrains.server.auth_server.AuthServer;
-import ru.geekbrains.server.auth_server.SimpleAuthServer;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ChatServer {
     private static final int PORT = 11111;
-    private AuthServer authServer;
-    private Socket authServerSocket;
-    private DataInputStream fromAuthServer;
-    private DataOutputStream toAuthServer;
-
-    private Set<User> onlineUsers;
+    private Map<User, ChatServerSessionHandler> onlineUsers;
 
     public ChatServer() {
-        onlineUsers = new HashSet<>();
+        onlineUsers = new HashMap<>();
     }
 
     public void start() {
@@ -39,41 +30,19 @@ public class ChatServer {
         }
     }
 
-    public synchronized void subscribeUser(User user) {
-        onlineUsers.add(user);
+    public synchronized void subscribeUser(User user, ChatServerSessionHandler sessionHandler) {
+        ChatServerSessionHandler handler = onlineUsers.get(user);
+        if (sessionHandler.equals(handler)) return;
+        if (handler != null) unsubscribeUser(user);
+        onlineUsers.put(user, sessionHandler);
     }
 
     public synchronized void unsubscribeUser(User user) {
-        onlineUsers.remove(user);
+        ChatServerSessionHandler handler = onlineUsers.remove(user);
+        if (handler != null) handler.close();
     }
 
-    public synchronized boolean isUserSubscribed(User user) {
-        return onlineUsers.contains(user);
-    }
-
-    private void startAuthServer() throws IOException, InterruptedException {
-        authServer = new SimpleAuthServer();
-        authServer.start();
-        authServerSocket = new Socket("localhost", 22222);
-        fromAuthServer = new DataInputStream(authServerSocket.getInputStream());
-        toAuthServer = new DataOutputStream(authServerSocket.getOutputStream());
-        new Thread(() -> {
-            try {
-                while (!Thread.currentThread().isInterrupted()) {
-                    String msg = fromAuthServer.readUTF();
-                    System.out.println("FROM AUTH: " + msg);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }).start();
-    }
-
-    public void sendAuthRequestToAuthServer(String jsonRequest) {
-        try {
-            toAuthServer.writeUTF(jsonRequest);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public synchronized boolean isUserOnline(User user) {
+        return onlineUsers.containsKey(user);
     }
 }

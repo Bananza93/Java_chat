@@ -35,6 +35,14 @@ public class AuthServerSessionHandler implements SessionHandler {
         new Thread(this::readMessage).start();
     }
 
+    public void close() {
+        try {
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void readMessage() {
         try {
             while(!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
