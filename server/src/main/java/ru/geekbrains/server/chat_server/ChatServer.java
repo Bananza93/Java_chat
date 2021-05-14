@@ -1,4 +1,7 @@
-package ru.geekbrains.chat_server;
+package ru.geekbrains.server.chat_server;
+
+import ru.geekbrains.server.auth_server.AuthServer;
+import ru.geekbrains.server.auth_server.SimpleAuthServer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -14,16 +17,15 @@ public class ChatServer {
     private DataOutputStream toAuthServer;
 
     public void start() {
-        try(ServerSocket serverSocket = new ServerSocket(PORT)) {
-            System.out.println("Server started");
-            startAuthServer();
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+            System.out.println("Chat server started");
             while (true) {
                 System.out.println("Waiting for connection");
                 Socket socket = serverSocket.accept();
                 System.out.println("Client connected (IP: " + socket.getInetAddress().getHostAddress() + ")");
-                new SessionHandler(socket).handle();
+                new ChatServerSessionHandler(socket, this).handle();
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -31,24 +33,26 @@ public class ChatServer {
     private void startAuthServer() throws IOException, InterruptedException {
         authServer = new SimpleAuthServer();
         authServer.start();
-//        System.out.println("AFTER CREATING THREAD");
-//        Thread.sleep(5000);
         authServerSocket = new Socket("localhost", 22222);
         fromAuthServer = new DataInputStream(authServerSocket.getInputStream());
         toAuthServer = new DataOutputStream(authServerSocket.getOutputStream());
-        System.out.println("BEFORE NEW THREAD");
         new Thread(() -> {
             try {
-                System.out.println("INSIDE NEW THREAD");
                 while (!Thread.currentThread().isInterrupted()) {
-                    /*String msg = fromAuthServer.readUTF();
-                    System.out.println("FROM AUTH: " + msg);*/
-                    System.out.println("FROM SERVER");
-                    Thread.sleep(2000);
+                    String msg = fromAuthServer.readUTF();
+                    System.out.println("FROM AUTH: " + msg);
                 }
-            } catch (InterruptedException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }).start();
+    }
+
+    public void sendAuthRequestToAuthServer(String jsonRequest) {
+        try {
+            toAuthServer.writeUTF(jsonRequest);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

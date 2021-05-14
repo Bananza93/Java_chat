@@ -1,4 +1,4 @@
-package ru.geekbrains.chat_server;
+package ru.geekbrains.server.chat_server;
 
 import ru.geekbrains.chat_common.Message;
 
@@ -7,15 +7,17 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class SessionHandler {
+public class ChatServerSessionHandler implements SessionHandler {
     private Socket socket;
+    private ChatServer chatServer;
     private DataOutputStream outputStream;
     private DataInputStream inputStream;
 
 
-    public SessionHandler(Socket socket) {
+    public ChatServerSessionHandler(Socket socket, ChatServer chatServer) {
         try {
             this.socket = socket;
+            this.chatServer = chatServer;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
             System.out.println("Handler created.");
@@ -24,6 +26,7 @@ public class SessionHandler {
         }
     }
 
+    @Override
     public void handle() {
         new Thread(() -> {
             try {
@@ -33,7 +36,7 @@ public class SessionHandler {
                     switch (message.getMessageType()) {
                         case PUBLIC -> sendPublicMessage();
                         case PRIVATE -> sendPrivateMessage();
-                        case AUTH_REQUEST -> authenticateUser();
+                        case AUTH_REQUEST -> chatServer.sendAuthRequestToAuthServer(rawMessage);
                         default -> System.out.println("Incorrect message type: " + message.getMessageType());
                     }
                 }
@@ -43,6 +46,7 @@ public class SessionHandler {
         }).start();
     }
 
+    @Override
     public void sendMessage(String jsonMessage) {
         try {
             outputStream.writeUTF(jsonMessage);
