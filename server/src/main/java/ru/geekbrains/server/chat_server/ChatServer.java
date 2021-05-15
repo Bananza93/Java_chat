@@ -35,6 +35,7 @@ public class ChatServer {
         if (sessionHandler.equals(handler)) return;
         if (handler != null) unsubscribeUser(user);
         onlineUsers.put(user, sessionHandler);
+        sessionHandler.setSessionUser(user);
     }
 
     public synchronized void unsubscribeUser(User user) {
@@ -45,4 +46,5 @@ public class ChatServer {
     public synchronized boolean isUserOnline(User user) {
         return onlineUsers.containsKey(user);
     }
+
 }

@@ -12,10 +12,12 @@ import java.util.Date;
 import java.util.Objects;
 
 public class ChatServerSessionHandler implements SessionHandler {
+    private Thread sessionThread;
     private Socket socket;
     private ChatServer server;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
+    private User sessionUser;
 
 
     public ChatServerSessionHandler(Socket socket, ChatServer chatServer) {
@@ -32,12 +34,13 @@ public class ChatServerSessionHandler implements SessionHandler {
 
     @Override
     public void handle() {
-        new Thread(this::readMessage).start();
+        (sessionThread = new Thread(this::readMessage)).start();
     }
 
     public void close() {
         try {
             socket.close();
+            sessionThread.interrupt();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -76,7 +79,13 @@ public class ChatServerSessionHandler implements SessionHandler {
     private void sendPublicMessage() {
     }
 
+    public User getSessionUser() {
+        return sessionUser;
+    }
 
+    public void setSessionUser(User sessionUser) {
+        this.sessionUser = sessionUser;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -88,6 +97,6 @@ public class ChatServerSessionHandler implements SessionHandler {
 
     @Override
     public int hashCode() {
-        return Objects.hash(socket);
+        return Objects.hashCode(socket);
     }
 }

@@ -4,5 +4,8 @@ import ru.geekbrains.chat_common.User;
 import ru.geekbrains.server.utils.Server;
 
 public interface AuthServer extends Server {
+    void addSession(AuthServerSessionHandler session);
+    void removeSession(AuthServerSessionHandler session);
+    boolean isConnectedToChatServer();
     User getUserByLoginAndPassword(String login, String password);
 }

@@ -10,9 +10,10 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.Date;
+import java.util.Objects;
 
 public class AuthServerSessionHandler implements SessionHandler {
-
+    private Thread sessionThread;
     private Socket socket;
     private AuthServer server;
     private DataInputStream inputStream;
@@ -32,12 +33,15 @@ public class AuthServerSessionHandler implements SessionHandler {
 
     @Override
     public void handle() {
-        new Thread(this::readMessage).start();
+        server.addSession(this);
+        (sessionThread = new Thread(this::readMessage)).start();
     }
 
     public void close() {
         try {
+            server.removeSession(this);
             socket.close();
+            sessionThread.interrupt();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -56,6 +60,7 @@ public class AuthServerSessionHandler implements SessionHandler {
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
+            close();
         }
     }
 
@@ -69,17 +74,34 @@ public class AuthServerSessionHandler implements SessionHandler {
     }
 
     private synchronized void authenticateUser(String messageBody) {
-        int splitterIndex = messageBody.indexOf(':');
-        User user = server.getUserByLoginAndPassword(messageBody.substring(0, splitterIndex), messageBody.substring(splitterIndex + 1));
         Message response = new Message();
-        if (user == null) {
+        if (!server.isConnectedToChatServer()) {
             response.setMessageType(MessageType.AUTH_FAILURE);
-            response.setMessageBody("Incorrect login and/or password");
+            response.setMessageBody("Server under maintenance. Please try again later.");
         } else {
-            response.setMessageType(MessageType.AUTH_SUCCESS);
-            response.setToUser(user);
+            int splitterIndex = messageBody.indexOf(':');
+            User user = server.getUserByLoginAndPassword(messageBody.substring(0, splitterIndex), messageBody.substring(splitterIndex + 1));
+            if (user == null) {
+                response.setMessageType(MessageType.AUTH_FAILURE);
+                response.setMessageBody("Incorrect login and/or password");
+            } else {
+                response.setMessageType(MessageType.AUTH_SUCCESS);
+                response.setToUser(user);
+            }
         }
         sendMessage(response);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AuthServerSessionHandler that = (AuthServerSessionHandler) o;
+        return socket.equals(that.socket);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(socket);
+    }
 }

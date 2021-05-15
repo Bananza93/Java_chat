@@ -2,23 +2,29 @@ package ru.geekbrains.server.auth_server;
 
 import ru.geekbrains.chat_common.User;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class SimpleAuthServer implements AuthServer {
 
     private static final int AUTH_SERVER_PORT = 22222;
     private static final String CHAT_SERVER_HOST = "localhost";
     private static final int CHAT_SERVER_PORT = 11111;
+    private final Object mon1 = new Object();
 
     private Socket chatServerSocket;
+    private DataInputStream fromChatServer;
     private DataOutputStream toChatServer;
     private boolean isConnectedToChatServer;
 
     private List<User> tempUserDatabase;
+    private Set<AuthServerSessionHandler> activeSessions;
 
 
     public SimpleAuthServer() {
@@ -26,6 +32,7 @@ public class SimpleAuthServer implements AuthServer {
                 new User("user2", "log2", "pass"),
                 new User("user3", "log3", "pass")
         );
+        activeSessions = new HashSet<>();
         isConnectedToChatServer = false;
     }
 
@@ -33,7 +40,7 @@ public class SimpleAuthServer implements AuthServer {
     public void start() {
         try (ServerSocket authServerSocket = new ServerSocket(AUTH_SERVER_PORT)) {
             System.out.println("Auth server started");
-            connectToChatServer();
+            connectionWithChatServerThread();
             while (true) {
                 System.out.println("Waiting for connection");
                 Socket socket = authServerSocket.accept();
@@ -42,47 +49,70 @@ public class SimpleAuthServer implements AuthServer {
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            stop();
         }
     }
 
     @Override
     public void stop() {
-
+        for (AuthServerSessionHandler activeSession : activeSessions) {
+            activeSession.close();
+        }
+        System.out.println("Auth server stopped.");
     }
 
+    public synchronized void addSession(AuthServerSessionHandler session) {
+        activeSessions.add(session);
+    }
 
+    public synchronized void removeSession(AuthServerSessionHandler session) {
+        activeSessions.remove(session);
+    }
+
+    private void connectionWithChatServerThread() {
+        Thread t = new Thread(this::connectToChatServer);
+        t.setDaemon(true);
+        t.start();
+    }
 
     private void connectToChatServer() {
-        Thread t = new Thread(() -> {
-            while (true) {
+        while (!isConnectedToChatServer) {
+            synchronized (mon1) {
                 try {
+                    System.out.println("Trying to connect with chat server...");
                     chatServerSocket = new Socket(CHAT_SERVER_HOST, CHAT_SERVER_PORT);
+                    fromChatServer = new DataInputStream(chatServerSocket.getInputStream());
                     toChatServer = new DataOutputStream(chatServerSocket.getOutputStream());
                     isConnectedToChatServer = true;
-                    checkConnectionWithChatServer();
-                    break;
+                    System.out.println("Successfully connected.");
                 } catch (IOException e) {
                     try {
-                        Thread.currentThread().wait(3000);
+                        System.out.println("Chat server not response.");
+                        mon1.wait(3000);
                     } catch (InterruptedException interruptedException) {/*do nothing*/}
                 }
             }
-        });
-        t.setDaemon(true);
-        t.start();
+        }
+        checkConnectionWithChatServer();
     }
 
     private void checkConnectionWithChatServer() {
-        Thread t = new Thread(() -> {
-            while (!chatServerSocket.isClosed()) {
+        while (isConnectedToChatServer) {
+            synchronized (mon1) {
                 try {
-                    Thread.currentThread().wait(3000);
-                } catch (InterruptedException e) {/*do nothing*/}
+                    //Если действительно что-то будем ждать от сервера, то придумать что-то другое
+                    fromChatServer.read();
+                    mon1.wait(3000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    isConnectedToChatServer = false;
+                }
             }
-            connectToChatServer();
-        });
-        t.setDaemon(true);
-        t.start();
+        }
+        System.out.println("Lost connection with chat server");
+        connectToChatServer();
     }
 
     @Override
@@ -95,14 +125,7 @@ public class SimpleAuthServer implements AuthServer {
         return null;
     }
 
-    public Socket getChatServerSocket() {
-        return chatServerSocket;
-    }
-
-    public DataOutputStream getToChatServer() {
-        return toChatServer;
-    }
-
+    @Override
     public boolean isConnectedToChatServer() {
         return isConnectedToChatServer;
     }
