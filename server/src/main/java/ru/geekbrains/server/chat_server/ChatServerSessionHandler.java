@@ -55,7 +55,7 @@ public class ChatServerSessionHandler implements SessionHandler {
                 Message message = Message.messageFromJson(rawMessage);
                 switch (message.getMessageType()) {
                     case PUBLIC -> server.sendPublicMessage(rawMessage);
-                    case PRIVATE -> server.sendPrivateMessage();
+                    case PRIVATE -> server.sendPrivateMessage(rawMessage, message.getToUser());
                     case SUBSCRIBE_REQUEST -> server.subscribeUser(message.getFromUser(), this);
                     default -> System.out.println("Incorrect message type: " + message.getMessageType());
                 }

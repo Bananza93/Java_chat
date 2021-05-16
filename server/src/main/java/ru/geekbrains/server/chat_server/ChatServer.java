@@ -50,12 +50,12 @@ public class ChatServer {
     }
 
 
-    public void sendPrivateMessage() {
+    public synchronized void sendPrivateMessage(String message, User toUser) {
+        onlineUsers.get(toUser).sendMessage(message);
     }
 
     public synchronized void sendPublicMessage(String message) {
         for (ChatServerSessionHandler sessionHandler : onlineUsers.values()) {
-            System.out.println("Message sent to " + sessionHandler.getSessionUser());
             sessionHandler.sendMessage(message);
         }
     }

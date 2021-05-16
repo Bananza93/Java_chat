@@ -60,8 +60,12 @@ public class MessageProcessor {
         }
     }
 
+    public synchronized void outgoingMessage(String jsonMessage) {
+        System.out.println("Message send: " + jsonMessage);
+        currentSession.sendMessage(jsonMessage);
+    }
+
     public void sendPublicMessage(String rawMessage) {
-        System.out.println("sendPublicMessage");
         new Thread(() -> {
             Message message = new Message();
             message.setMessageType(MessageType.PUBLIC);
@@ -82,11 +86,6 @@ public class MessageProcessor {
         }).start();
     }
 
-    public synchronized void outgoingMessage(String jsonMessage) {
-        System.out.println("Message send: " + jsonMessage);
-        currentSession.sendMessage(jsonMessage);
-    }
-
     public void sendAuthRequest(String login, String password) {
         new Thread(() -> {
             Message message = new Message();
@@ -95,17 +94,5 @@ public class MessageProcessor {
             message.setMessageDate(new Date());
             outgoingMessage(message.messageToJson());
         }).start();
-    }
-
-    private void blockAuthElements() {
-        controller.authWindowLoginField.setDisable(true);
-        controller.authWindowPasswordField.setDisable(true);
-        controller.authWindowLoginButton.setDisable(true);
-    }
-
-    private void unblockAuthElements() {
-        controller.authWindowLoginField.setDisable(false);
-        controller.authWindowPasswordField.setDisable(false);
-        controller.authWindowLoginButton.setDisable(false);
     }
 }
