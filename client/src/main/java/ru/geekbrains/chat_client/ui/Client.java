@@ -1,7 +1,6 @@
 package ru.geekbrains.chat_client.ui;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -56,10 +55,7 @@ public class Client extends Application {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Client.class.getResource("/ChatWindow.fxml"));
         stage.setScene(new Scene(loader.load()));
-        stage.setOnCloseRequest(e -> {
-            //Platform.exit();
-            System.exit(0);
-        });
+        stage.setOnCloseRequest(e -> System.exit(0));
         chatStage = stage;
     }
 

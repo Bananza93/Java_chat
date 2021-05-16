@@ -3,27 +3,17 @@ package ru.geekbrains.chat_common;
 import com.google.gson.Gson;
 
 import java.util.Date;
-import java.util.List;
+import java.util.Set;
 
 public class Message {
     private MessageType messageType;
     private String messageBody;
-    private List<?> messageUtilList;
+    private Set<String> onlineUsersSet;
     private User fromUser;
     private User toUser;
     private Date messageDate;
 
     public Message() {
-    }
-
-    public Message(MessageType messageType, String messageBody) {
-        this.messageType = messageType;
-        this.messageBody = messageBody;
-    }
-
-    public Message(MessageType messageType, List<?> messageUtilList) {
-        this.messageType = messageType;
-        this.messageUtilList = messageUtilList;
     }
 
     public String messageToJson() {
@@ -74,11 +64,11 @@ public class Message {
         this.messageDate = messageDate;
     }
 
-    public List<?> getMessageUtilList() {
-        return messageUtilList;
+    public Set<String> getOnlineUsersSet() {
+        return onlineUsersSet;
     }
 
-    public void setMessageUtilList(List<?> messageUtilList) {
-        this.messageUtilList = messageUtilList;
+    public void setOnlineUsersSet(Set<String> onlineUsersSet) {
+        this.onlineUsersSet = onlineUsersSet;
     }
 }

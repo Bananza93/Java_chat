@@ -1,5 +1,7 @@
 package ru.geekbrains.chat_common;
 
+import java.util.Objects;
+
 public class User {
     private String username;
     private String login;
@@ -33,5 +35,18 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        User user = (User) o;
+        return username.equals(user.username) && login.equals(user.login) && password.equals(user.password);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username, login, password);
     }
 }

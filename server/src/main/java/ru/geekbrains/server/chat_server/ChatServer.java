@@ -7,15 +7,12 @@ import ru.geekbrains.chat_common.User;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ChatServer {
     private static final int PORT = 11111;
-    private Map<User, ChatServerSessionHandler> onlineUsers;
+    private final Map<User, ChatServerSessionHandler> onlineUsers;
 
     public ChatServer() {
         onlineUsers = new HashMap<>();
@@ -52,9 +49,6 @@ public class ChatServer {
         sendOnlineUsersList();
     }
 
-    public synchronized boolean isUserOnline(User user) {
-        return onlineUsers.containsKey(user);
-    }
 
     public void sendPrivateMessage() {
     }
@@ -67,10 +61,10 @@ public class ChatServer {
     }
 
     public synchronized void sendOnlineUsersList() {
-        ArrayList<String> list = onlineUsers.keySet().stream().map(User::getUsername).collect(Collectors.toCollection(ArrayList::new));
+        HashSet<String> set = onlineUsers.keySet().stream().map(User::getUsername).collect(Collectors.toCollection(HashSet::new));
         Message message = new Message();
         message.setMessageType(MessageType.ONLINE_USERS_LIST);
-        message.setMessageUtilList(list);
+        message.setOnlineUsersSet(set);
         message.setMessageDate(new Date());
         String jsonMessage = message.messageToJson();
         for (ChatServerSessionHandler handler : onlineUsers.values()) {

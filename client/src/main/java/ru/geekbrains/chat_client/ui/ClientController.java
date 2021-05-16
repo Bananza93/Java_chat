@@ -14,7 +14,6 @@ import javafx.scene.input.KeyEvent;
 import javafx.stage.Stage;
 import ru.geekbrains.chat_client.network.ClientSessionHandler;
 import ru.geekbrains.chat_client.network.MessageProcessor;
-import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.User;
 
 import java.awt.*;
@@ -44,14 +43,14 @@ public class ClientController implements Initializable {
 
     //ChatWindow vars
     public TextArea chatArea;
-    public ListView onlineUsers;
+    public ListView<String> onlineUsers;
     public TextArea userMessage;
     public Button sendButton;
 
     public void Dummy(ActionEvent actionEvent) {
     }
 
-    public void sendAuthRequest(ActionEvent actionEvent) throws IOException {
+    public void sendAuthRequest(ActionEvent actionEvent) {
         String login = authWindowLoginField.getText();
         String password = authWindowPasswordField.getText();
         if (login.isEmpty() || password.isEmpty()) {
@@ -89,13 +88,6 @@ public class ClientController implements Initializable {
         userMessage.clear();
     }
 
-    public void addMessageToChatArea(String message) {
-
-        String incglob = "[TIME] user: message";
-        String incpriv = "[TIME] (PRIVATE) user -> you: message";
-        String outpriv = "[TIME] (PRIVATE) you -> user: message";
-    }
-
     public void clearChat(ActionEvent actionEvent) {
         chatArea.clear();
     }
@@ -125,6 +117,13 @@ public class ClientController implements Initializable {
         messageProcessor = new MessageProcessor(this);
     }
 
+    public void loadChatWindow(User owner) throws IOException {
+        connectToChatServer(owner);
+        messageProcessor.sendSubscribeRequest(owner);
+        Client.chatStage.setTitle(Client.chatStage.getTitle() + " [User: " + owner.getUsername() + "]");
+        Client.showChatStage();
+    }
+
     private void connectToAuthServer() {
         //Возможно тут не нужно столько проверок...
         try {
@@ -135,18 +134,11 @@ public class ClientController implements Initializable {
                     return;
                 }
             }
-            currentSession = new ClientSessionHandler(new Socket(AUTH_SERVER_HOST, AUTH_SERVER_PORT), "AUTH", messageProcessor, this);
+            currentSession = new ClientSessionHandler(new Socket(AUTH_SERVER_HOST, AUTH_SERVER_PORT), "AUTH", messageProcessor);
             currentSession.handle();
         } catch (IOException e) {
             authWindowStateLabel.setText("Auth server unavailable.");
         }
-    }
-
-    public void loadChatWindow(User owner) throws IOException {
-        connectToChatServer(owner);
-        messageProcessor.sendSubscribeRequest(owner);
-        Client.chatStage.setTitle(Client.chatStage.getTitle() + " [User: " + owner.getUsername() + "]");
-        Client.showChatStage();
     }
 
     private void connectToChatServer(User owner) {
@@ -159,7 +151,7 @@ public class ClientController implements Initializable {
                     return;
                 }
             }
-            currentSession = new ClientSessionHandler(new Socket(CHAT_SERVER_HOST, CHAT_SERVER_PORT), "CHAT", messageProcessor, this, owner);
+            currentSession = new ClientSessionHandler(new Socket(CHAT_SERVER_HOST, CHAT_SERVER_PORT), "CHAT", messageProcessor, owner);
             currentSession.handle();
         } catch (IOException e) {
             e.printStackTrace();

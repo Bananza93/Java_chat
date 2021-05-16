@@ -1,6 +1,5 @@
 package ru.geekbrains.chat_client.network;
 
-import ru.geekbrains.chat_client.ui.ClientController;
 import ru.geekbrains.chat_common.User;
 
 import java.io.DataInputStream;
@@ -10,7 +9,6 @@ import java.net.Socket;
 
 public class ClientSessionHandler {
     private MessageProcessor messageProcessor;
-    private ClientController controller;
     private String serverType;
     private Socket socket;
     private DataInputStream inputStream;
@@ -18,11 +16,10 @@ public class ClientSessionHandler {
     private Thread sessionThread;
     private User sessionOwner;
 
-    public ClientSessionHandler(Socket socket, String serverType, MessageProcessor messageProcessor, ClientController controller) {
+    public ClientSessionHandler(Socket socket, String serverType, MessageProcessor messageProcessor) {
         try {
             this.messageProcessor = messageProcessor;
             this.serverType = serverType;
-            this.controller = controller;
             this.socket = socket;
             inputStream = new DataInputStream(socket.getInputStream());
             outputStream = new DataOutputStream(socket.getOutputStream());
@@ -32,8 +29,8 @@ public class ClientSessionHandler {
         }
     }
 
-    public ClientSessionHandler(Socket socket, String serverType, MessageProcessor messageProcessor, ClientController controller, User sessionOwner) {
-        this(socket, serverType, messageProcessor, controller);
+    public ClientSessionHandler(Socket socket, String serverType, MessageProcessor messageProcessor, User sessionOwner) {
+        this(socket, serverType, messageProcessor);
         this.sessionOwner = sessionOwner;
     }
 

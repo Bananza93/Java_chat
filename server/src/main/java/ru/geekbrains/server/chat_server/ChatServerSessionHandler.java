@@ -8,7 +8,6 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Date;
 import java.util.Objects;
 
 public class ChatServerSessionHandler implements SessionHandler {
@@ -58,7 +57,6 @@ public class ChatServerSessionHandler implements SessionHandler {
                     case PUBLIC -> server.sendPublicMessage(rawMessage);
                     case PRIVATE -> server.sendPrivateMessage();
                     case SUBSCRIBE_REQUEST -> server.subscribeUser(message.getFromUser(), this);
-                    //case UNSUBSCRIBE_REQUEST -> server.unsubscribeUser(message.getFromUser());
                     default -> System.out.println("Incorrect message type: " + message.getMessageType());
                 }
             }

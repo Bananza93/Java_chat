@@ -10,9 +10,10 @@ import ru.geekbrains.chat_common.User;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Set;
 
 public class MessageProcessor {
-    private ClientController controller;
+    private final ClientController controller;
     private ClientSessionHandler currentSession;
 
     public MessageProcessor(ClientController controller) {
@@ -49,7 +50,13 @@ public class MessageProcessor {
                 controller.chatArea.appendText(msg);
             });
         } else if (message.getMessageType().equals(MessageType.ONLINE_USERS_LIST)) {
-            Platform.runLater(() -> controller.onlineUsers.setItems(FXCollections.observableArrayList(message.getMessageUtilList())));
+            Platform.runLater(() -> {
+                Set<String> users = message.getOnlineUsersSet();
+                users.remove(currentSession.getSessionOwner().getUsername());
+                controller.onlineUsers.setItems(FXCollections.observableArrayList(users));
+                controller.onlineUsers.getItems().add(0, "PUBLIC");
+                controller.onlineUsers.getSelectionModel().selectFirst();
+            });
         }
     }
 

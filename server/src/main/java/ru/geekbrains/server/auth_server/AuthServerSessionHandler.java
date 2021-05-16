@@ -52,9 +52,10 @@ public class AuthServerSessionHandler implements SessionHandler {
             while(!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String rawMessage = inputStream.readUTF();
                 Message message = Message.messageFromJson(rawMessage);
-                switch (message.getMessageType()) {
-                    case AUTH_REQUEST -> authenticateUser(message.getMessageBody());
-                    default -> System.out.println("Incorrect message type: " + message.getMessageType());
+                if (message.getMessageType() == MessageType.AUTH_REQUEST) {
+                    authenticateUser(message.getMessageBody());
+                } else {
+                    System.out.println("Incorrect message type: " + message.getMessageType());
                 }
             }
         } catch (IOException e) {
