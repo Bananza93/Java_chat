@@ -37,8 +37,10 @@ public class ChatServerSessionHandler implements SessionHandler {
         (sessionThread = new Thread(this::readMessage)).start();
     }
 
+    @Override
     public void close() {
         try {
+            System.out.println("Close session invoked");
             socket.close();
             sessionThread.interrupt();
         } catch (IOException e) {
@@ -50,33 +52,29 @@ public class ChatServerSessionHandler implements SessionHandler {
         try {
             while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String rawMessage = inputStream.readUTF();
+                System.out.println("Message received: " + rawMessage);
                 Message message = Message.messageFromJson(rawMessage);
                 switch (message.getMessageType()) {
-                    case PUBLIC -> sendPublicMessage();
-                    case PRIVATE -> sendPrivateMessage();
+                    case PUBLIC -> server.sendPublicMessage(rawMessage);
+                    case PRIVATE -> server.sendPrivateMessage();
                     case SUBSCRIBE_REQUEST -> server.subscribeUser(message.getFromUser(), this);
-                    case UNSUBSCRIBE_REQUEST -> server.unsubscribeUser(message.getFromUser());
+                    //case UNSUBSCRIBE_REQUEST -> server.unsubscribeUser(message.getFromUser());
                     default -> System.out.println("Incorrect message type: " + message.getMessageType());
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Handler closed at " + System.currentTimeMillis());
+        } finally {
+            server.unsubscribeUser(sessionUser);
         }
     }
 
-    private void sendMessage(Message message) {
+    public void sendMessage(String jsonMessage) {
         try {
-            message.setMessageDate(new Date());
-            outputStream.writeUTF(message.messageToJson());
+            outputStream.writeUTF(jsonMessage);
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private void sendPrivateMessage() {
-    }
-
-    private void sendPublicMessage() {
     }
 
     public User getSessionUser() {

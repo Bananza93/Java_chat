@@ -58,7 +58,7 @@ public class AuthServerSessionHandler implements SessionHandler {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Handler closed at " + System.currentTimeMillis());
         } finally {
             close();
         }
