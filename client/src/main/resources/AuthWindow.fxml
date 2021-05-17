@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="ru.geekbrains.chat_client.ui.ClientController"
+      prefHeight="500.0" prefWidth="300.0">
+    <TextField fx:id="authWindowLoginField"/>
+    <PasswordField fx:id="authWindowPasswordField"/>
+    <Button fx:id="authWindowLoginButton" onAction="#sendAuthRequest" text="Log in"/>
+    <Button fx:id="authWindowExitButton" onAction="#closeProgram" text="Exit"/>
+    <Label fx:id="authWindowStateLabel" textFill="firebrick" wrapText="true"/>
+</VBox>
