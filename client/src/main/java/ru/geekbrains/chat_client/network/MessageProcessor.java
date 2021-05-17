@@ -51,11 +51,19 @@ public class MessageProcessor {
             });
         } else if (message.getMessageType().equals(MessageType.ONLINE_USERS_LIST)) {
             Platform.runLater(() -> {
-                Set<String> users = message.getOnlineUsersSet();
-                users.remove(currentSession.getSessionOwner().getUsername());
+                Set<User> users = message.getOnlineUsersSet();
+                users.remove(currentSession.getSessionOwner());
                 controller.onlineUsers.setItems(FXCollections.observableArrayList(users));
-                controller.onlineUsers.getItems().add(0, "PUBLIC");
+                controller.onlineUsers.getItems().add(0, new User("PUBLIC", "", ""));
                 controller.onlineUsers.getSelectionModel().selectFirst();
+            });
+        } else if (message.getMessageType().equals(MessageType.PRIVATE)) {
+            Platform.runLater(() -> {
+                String msg = "[" + new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss").format(message.getMessageDate())
+                        + "]\u00A0" + message.getFromUser().getUsername()
+                        + "\u00A0->\u00A0ME:\u00A0" + message.getMessageBody()
+                        + System.lineSeparator();
+                controller.chatArea.appendText(msg);
             });
         }
     }
@@ -69,8 +77,20 @@ public class MessageProcessor {
         new Thread(() -> {
             Message message = new Message();
             message.setMessageType(MessageType.PUBLIC);
-            message.setMessageBody(rawMessage);
+            message.setMessageBody(rawMessage.trim());
             message.setFromUser(currentSession.getSessionOwner());
+            message.setMessageDate(new Date());
+            outgoingMessage(message.messageToJson());
+        }).start();
+    }
+
+    public void sendPrivateMessage(String rawMessage, User toUser) {
+        new Thread(() -> {
+            Message message = new Message();
+            message.setMessageType(MessageType.PRIVATE);
+            message.setMessageBody(rawMessage.trim());
+            message.setFromUser(currentSession.getSessionOwner());
+            message.setToUser(toUser);
             message.setMessageDate(new Date());
             outgoingMessage(message.messageToJson());
         }).start();

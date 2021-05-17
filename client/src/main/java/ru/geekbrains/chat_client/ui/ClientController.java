@@ -43,7 +43,7 @@ public class ClientController implements Initializable {
 
     //ChatWindow vars
     public TextArea chatArea;
-    public ListView<String> onlineUsers;
+    public ListView<User> onlineUsers;
     public TextArea userMessage;
     public Button sendButton;
 
@@ -70,6 +70,7 @@ public class ClientController implements Initializable {
         if (keyEvent.getCode() == KeyCode.ENTER) {
             if (keyEvent.isShiftDown()) {
                 userMessage.appendText("\n");
+                System.out.println("shift is down");
             } else {
                 sendMessage();
             }
@@ -79,11 +80,17 @@ public class ClientController implements Initializable {
     public void sendMessage() {
         String rawMessage = userMessage.getText();
         if (rawMessage.length() == 0) return;
-        messageProcessor.sendPublicMessage(rawMessage);
-
+        rawMessage = rawMessage.trim();
         SimpleDateFormat pattern = new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss");
-        String prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME:\u00A0";
-
+        String prefix;
+        User toUser = onlineUsers.getSelectionModel().getSelectedItem();
+        if (toUser.getUsername().equals("PUBLIC")) {
+            messageProcessor.sendPublicMessage(rawMessage);
+            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME:\u00A0";
+        } else {
+            messageProcessor.sendPrivateMessage(rawMessage, toUser);
+            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME\u00A0->\u00A0" + toUser.getUsername()+ ":\u00A0";
+        }
         chatArea.appendText(prefix + rawMessage + System.lineSeparator());
         userMessage.clear();
     }
@@ -91,7 +98,6 @@ public class ClientController implements Initializable {
     public void clearChat(ActionEvent actionEvent) {
         chatArea.clear();
     }
-
 
     public void closeProgram(ActionEvent actionEvent) {
         Platform.exit();
@@ -117,6 +123,7 @@ public class ClientController implements Initializable {
         messageProcessor = new MessageProcessor(this);
     }
 
+
     public void loadChatWindow(User owner) throws IOException {
         connectToChatServer(owner);
         messageProcessor.sendSubscribeRequest(owner);
@@ -125,7 +132,6 @@ public class ClientController implements Initializable {
     }
 
     private void connectToAuthServer() {
-        //Возможно тут не нужно столько проверок...
         try {
             if (currentSession != null) {
                 if (!currentSession.getServerType().equals("AUTH")) {
@@ -142,7 +148,6 @@ public class ClientController implements Initializable {
     }
 
     private void connectToChatServer(User owner) {
-        //Возможно тут не нужно столько проверок...
         try {
             if (currentSession != null) {
                 if (!currentSession.getServerType().equals("CHAT")) {

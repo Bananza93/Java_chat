@@ -61,7 +61,7 @@ public class ChatServer {
     }
 
     public synchronized void sendOnlineUsersList() {
-        HashSet<String> set = onlineUsers.keySet().stream().map(User::getUsername).collect(Collectors.toCollection(HashSet::new));
+        HashSet<User> set = new HashSet<>(onlineUsers.keySet());
         Message message = new Message();
         message.setMessageType(MessageType.ONLINE_USERS_LIST);
         message.setOnlineUsersSet(set);

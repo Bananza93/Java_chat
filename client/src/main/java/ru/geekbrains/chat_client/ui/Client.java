@@ -4,10 +4,14 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import ru.geekbrains.chat_common.User;
+
 import java.io.IOException;
 
 public class Client extends Application {
@@ -55,6 +59,18 @@ public class Client extends Application {
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Client.class.getResource("/ChatWindow.fxml"));
         stage.setScene(new Scene(loader.load()));
+        ListView<User> onlineUsers = (ListView<User>) stage.getScene().lookup("#onlineUsers");
+        onlineUsers.setCellFactory(stringListView -> new ListCell<>() {
+            @Override
+            public void updateItem(User item, boolean empty) {
+                super.updateItem(item, empty);
+                if (item == null) {
+                    setText(null);
+                } else {
+                    setText(item.getUsername());
+                }
+            }
+        });
         stage.setOnCloseRequest(e -> System.exit(0));
         chatStage = stage;
     }

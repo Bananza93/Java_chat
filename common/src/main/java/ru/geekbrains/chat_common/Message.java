@@ -8,7 +8,7 @@ import java.util.Set;
 public class Message {
     private MessageType messageType;
     private String messageBody;
-    private Set<String> onlineUsersSet;
+    private Set<User> onlineUsersSet;
     private User fromUser;
     private User toUser;
     private Date messageDate;
@@ -64,11 +64,11 @@ public class Message {
         this.messageDate = messageDate;
     }
 
-    public Set<String> getOnlineUsersSet() {
+    public Set<User> getOnlineUsersSet() {
         return onlineUsersSet;
     }
 
-    public void setOnlineUsersSet(Set<String> onlineUsersSet) {
+    public void setOnlineUsersSet(Set<User> onlineUsersSet) {
         this.onlineUsersSet = onlineUsersSet;
     }
 }
