@@ -1,7 +1,7 @@
 package ru.geekbrains.chat_client.ui;
 
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -35,16 +35,25 @@ public class ClientController implements Initializable {
     private static ClientSessionHandler currentSession;
 
     //AuthWindow vars
+    @FXML
     public TextField authWindowLoginField;
+    @FXML
     public PasswordField authWindowPasswordField;
+    @FXML
     public Button authWindowLoginButton;
+    @FXML
     public Button authWindowExitButton;
+    @FXML
     public Label authWindowStateLabel;
 
     //ChatWindow vars
+    @FXML
     public TextArea chatArea;
+    @FXML
     public ListView<User> onlineUsers;
+    @FXML
     public TextArea userMessage;
+    @FXML
     public Button sendButton;
 
     public void Dummy(ActionEvent actionEvent) {
@@ -70,7 +79,6 @@ public class ClientController implements Initializable {
         if (keyEvent.getCode() == KeyCode.ENTER) {
             if (keyEvent.isShiftDown()) {
                 userMessage.appendText("\n");
-                System.out.println("shift is down");
             } else {
                 sendMessage();
             }
@@ -100,7 +108,7 @@ public class ClientController implements Initializable {
     }
 
     public void closeProgram(ActionEvent actionEvent) {
-        Platform.exit();
+        System.exit(0);
     }
 
     public void toGitHubPage(ActionEvent actionEvent) throws URISyntaxException, IOException {
@@ -120,15 +128,19 @@ public class ClientController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        messageProcessor = new MessageProcessor(this);
+        if (messageProcessor == null) {
+            messageProcessor = new MessageProcessor(this);
+        } else {
+            messageProcessor.setController(this);
+        }
     }
 
 
     public void loadChatWindow(User owner) throws IOException {
         connectToChatServer(owner);
-        messageProcessor.sendSubscribeRequest(owner);
-        Client.chatStage.setTitle(Client.chatStage.getTitle() + " [User: " + owner.getUsername() + "]");
         Client.showChatStage();
+        Client.chatStage.setTitle(Client.chatStage.getTitle() + " [User: " + owner.getUsername() + "]");
+        messageProcessor.sendSubscribeRequest(owner);
     }
 
     private void connectToAuthServer() {

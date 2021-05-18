@@ -41,6 +41,9 @@ public class ClientSessionHandler {
 
     public void close() {
         try {
+            if (messageProcessor.getCurrentSession().getServerType().equals(this.serverType)) {
+                messageProcessor.setCurrentSession(null);
+            }
             socket.close();
             sessionThread.interrupt();
         } catch (IOException e) {

@@ -13,15 +13,23 @@ import java.util.Date;
 import java.util.Set;
 
 public class MessageProcessor {
-    private final ClientController controller;
+    private ClientController controller;
     private ClientSessionHandler currentSession;
 
     public MessageProcessor(ClientController controller) {
         this.controller = controller;
     }
 
+    public ClientSessionHandler getCurrentSession() {
+        return currentSession;
+    }
+
     public void setCurrentSession(ClientSessionHandler session) {
         this.currentSession = session;
+    }
+
+    public void setController(ClientController controller) {
+        this.controller = controller;
     }
 
     public synchronized void incomingMessage(String jsonMessage) throws IOException {

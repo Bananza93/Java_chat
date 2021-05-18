@@ -63,10 +63,12 @@ public class SimpleAuthServer implements AuthServer {
     }
 
     public synchronized void addSession(AuthServerSessionHandler session) {
+        System.out.println("Session added");
         activeSessions.add(session);
     }
 
     public synchronized void removeSession(AuthServerSessionHandler session) {
+        System.out.println("Session removed");
         activeSessions.remove(session);
     }
 

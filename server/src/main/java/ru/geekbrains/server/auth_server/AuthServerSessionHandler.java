@@ -11,9 +11,12 @@ import java.io.IOException;
 import java.net.Socket;
 import java.util.Date;
 import java.util.Objects;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class AuthServerSessionHandler implements SessionHandler {
     private Thread sessionThread;
+    private Timer timeoutTimer;
     private Socket socket;
     private AuthServer server;
     private DataInputStream inputStream;
@@ -34,14 +37,27 @@ public class AuthServerSessionHandler implements SessionHandler {
     @Override
     public void handle() {
         server.addSession(this);
+        createTimeoutTask();
         (sessionThread = new Thread(this::readMessage)).start();
+    }
+
+    private void createTimeoutTask() {
+        (timeoutTimer = new Timer(true)).schedule(new TimerTask() {
+            @Override
+            public void run() {
+                close();
+            }
+        }, 120_000);
     }
 
     public void close() {
         try {
-            server.removeSession(this);
-            socket.close();
-            sessionThread.interrupt();
+            if (!socket.isClosed() || !sessionThread.isInterrupted()) {
+                timeoutTimer.cancel();
+                server.removeSession(this);
+                socket.close();
+                sessionThread.interrupt();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
