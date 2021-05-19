@@ -3,14 +3,14 @@ package ru.geekbrains.server.chat_server;
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.MessageType;
 import ru.geekbrains.chat_common.User;
+import ru.geekbrains.server.utils.Server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
-import java.util.stream.Collectors;
 
-public class ChatServer {
+public class ChatServer implements Server {
     private static final int PORT = 11111;
     private final Map<User, ChatServerSessionHandler> onlineUsers;
 
@@ -18,18 +18,30 @@ public class ChatServer {
         onlineUsers = new HashMap<>();
     }
 
+    @Override
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            System.out.println("Chat server started");
+            System.out.println("Chat server started.");
             while (true) {
-                System.out.println("Waiting for connection");
+                System.out.println("Waiting for connection...");
                 Socket socket = serverSocket.accept();
                 System.out.println("Client connected (IP: " + socket.getInetAddress().getHostAddress() + ")");
                 new ChatServerSessionHandler(socket, this).handle();
             }
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            stop();
         }
+    }
+
+    @Override
+    public void stop() {
+        for (ChatServerSessionHandler serverSessionHandler : onlineUsers.values()) {
+            serverSessionHandler.close();
+        }
+        System.out.println("Chat server stopped.");
+        System.exit(0);
     }
 
     public synchronized void subscribeUser(User user, ChatServerSessionHandler sessionHandler) {

@@ -5,51 +5,55 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox xmlns:fx="http://javafx.com/fxml"
-      xmlns="http://javafx.com/javafx"
-      fx:controller="ru.geekbrains.chat_client.ui.ClientController"
-      prefHeight="600.0" prefWidth="800.0">
+<VBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.geekbrains.chat_client.ui.ClientController">
     <MenuBar>
         <Menu text="Chat">
-            <MenuItem onAction="#Dummy" text="Connect" />
-            <MenuItem onAction="#clearChat" text="Clear" />
-            <MenuItem onAction="#closeProgram" text="Exit" />
+            <MenuItem onAction="#Dummy" text="Connect"/>
+            <MenuItem onAction="#clearChat" text="Clear"/>
+            <MenuItem onAction="#closeProgram" text="Exit"/>
         </Menu>
         <Menu text="Settings">
-            <MenuItem onAction="#Dummy" text="Settings1" />
-            <MenuItem onAction="#Dummy" text="Settings2" />
-            <MenuItem onAction="#Dummy" text="Settings3" />
+            <MenuItem onAction="#Dummy" text="Settings1"/>
+            <MenuItem onAction="#Dummy" text="Settings2"/>
+            <MenuItem onAction="#Dummy" text="Settings3"/>
         </Menu>
         <Menu text="Help">
-            <MenuItem onAction="#Dummy" text="Quick Guide" />
-            <MenuItem onAction="#toGitHubPage" text="Go to GitHub page" />
-            <MenuItem onAction="#openAboutWindow" text="About" />
+            <MenuItem onAction="#Dummy" text="Quick Guide"/>
+            <MenuItem onAction="#toGitHubPage" text="Go to GitHub page"/>
+            <MenuItem onAction="#openAboutWindow" text="About"/>
         </Menu>
     </MenuBar>
     <HBox VBox.vgrow="ALWAYS">
-        <TextArea fx:id="chatArea" editable="false" wrapText="true" HBox.hgrow="ALWAYS" VBox.vgrow="ALWAYS" minWidth="300.0">
+        <TextArea fx:id="chatArea" editable="false" minWidth="300.0" wrapText="true" HBox.hgrow="ALWAYS"
+                  VBox.vgrow="ALWAYS">
             <HBox.margin>
-                <Insets left="5.0" right="5.0" top="5.0" />
+                <Insets left="5.0" right="5.0" top="5.0"/>
             </HBox.margin>
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
         </TextArea>
         <ListView fx:id="onlineUsers" minWidth="150.0" prefWidth="150.0">
             <HBox.margin>
-                <Insets right="5.0" top="5.0" />
+                <Insets right="5.0" top="5.0"/>
             </HBox.margin>
         </ListView>
     </HBox>
     <HBox>
-        <TextArea fx:id="userMessage" minWidth="300.0" prefHeight="70.0" wrapText="true" HBox.hgrow="ALWAYS"  onKeyReleased="#userMessageUtilityKeyHandler">
+        <TextArea fx:id="userMessage" minWidth="300.0" onKeyReleased="#userMessageUtilityKeyHandler" prefHeight="70.0"
+                  promptText="Write message..." wrapText="true" HBox.hgrow="ALWAYS">
             <HBox.margin>
-                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0"/>
             </HBox.margin>
             <font>
-                <Font name="Arial" size="14.0" />
+                <Font name="Arial" size="14.0"/>
             </font>
         </TextArea>
-        <Button fx:id="sendButton" minWidth="150.0" onAction="#sendMessageBySendButton" prefHeight="70.0" prefWidth="150.0" text="SEND">
+        <Button fx:id="sendButton" minWidth="150.0" onAction="#sendMessageBySendButton" prefHeight="70.0"
+                prefWidth="150.0" text="SEND">
             <HBox.margin>
-                <Insets bottom="5.0" right="5.0" top="5.0" />
+                <Insets bottom="5.0" right="5.0" top="5.0"/>
             </HBox.margin>
         </Button>
     </HBox>

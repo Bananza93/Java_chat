@@ -3,7 +3,7 @@ package ru.geekbrains.server.auth_server;
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.MessageType;
 import ru.geekbrains.chat_common.User;
-import ru.geekbrains.server.utils.SessionHandler;
+import ru.geekbrains.chat_common.SessionHandler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -41,15 +41,7 @@ public class AuthServerSessionHandler implements SessionHandler {
         (sessionThread = new Thread(this::readMessage)).start();
     }
 
-    private void createTimeoutTask() {
-        (timeoutTimer = new Timer(true)).schedule(new TimerTask() {
-            @Override
-            public void run() {
-                close();
-            }
-        }, 120_000);
-    }
-
+    @Override
     public void close() {
         try {
             if (!socket.isClosed() || !sessionThread.isInterrupted()) {
@@ -63,9 +55,18 @@ public class AuthServerSessionHandler implements SessionHandler {
         }
     }
 
+    private void createTimeoutTask() {
+        (timeoutTimer = new Timer(true)).schedule(new TimerTask() {
+            @Override
+            public void run() {
+                close();
+            }
+        }, 120_000);
+    }
+
     private void readMessage() {
         try {
-            while(!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
+            while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String rawMessage = inputStream.readUTF();
                 Message message = Message.messageFromJson(rawMessage);
                 if (message.getMessageType() == MessageType.AUTH_REQUEST) {

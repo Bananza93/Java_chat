@@ -67,8 +67,7 @@ public class ClientController implements Initializable {
             return;
         }
         authWindowStateLabel.setText("");
-        connectToAuthServer();
-        messageProcessor.sendAuthRequest(login, password);
+        if (connectToAuthServer()) messageProcessor.sendAuthRequest(login, password);
     }
 
     public void sendMessageBySendButton(ActionEvent actionEvent) {
@@ -80,6 +79,7 @@ public class ClientController implements Initializable {
             if (keyEvent.isShiftDown()) {
                 userMessage.appendText("\n");
             } else {
+                userMessage.setText(userMessage.getText().substring(0, userMessage.getText().length() - 1));
                 sendMessage();
             }
         }
@@ -88,7 +88,6 @@ public class ClientController implements Initializable {
     public void sendMessage() {
         String rawMessage = userMessage.getText();
         if (rawMessage.length() == 0) return;
-        rawMessage = rawMessage.trim();
         SimpleDateFormat pattern = new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss");
         String prefix;
         User toUser = onlineUsers.getSelectionModel().getSelectedItem();
@@ -97,7 +96,7 @@ public class ClientController implements Initializable {
             prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME:\u00A0";
         } else {
             messageProcessor.sendPrivateMessage(rawMessage, toUser);
-            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME\u00A0->\u00A0" + toUser.getUsername()+ ":\u00A0";
+            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME\u00A0->\u00A0" + toUser.getUsername() + ":\u00A0";
         }
         chatArea.appendText(prefix + rawMessage + System.lineSeparator());
         userMessage.clear();
@@ -143,35 +142,39 @@ public class ClientController implements Initializable {
         messageProcessor.sendSubscribeRequest(owner);
     }
 
-    private void connectToAuthServer() {
+    private boolean connectToAuthServer() {
         try {
             if (currentSession != null) {
                 if (!currentSession.getServerType().equals("AUTH")) {
                     currentSession.close();
                 } else {
-                    return;
+                    return true;
                 }
             }
             currentSession = new ClientSessionHandler(new Socket(AUTH_SERVER_HOST, AUTH_SERVER_PORT), "AUTH", messageProcessor);
             currentSession.handle();
+            return true;
         } catch (IOException e) {
             authWindowStateLabel.setText("Auth server unavailable.");
         }
+        return false;
     }
 
-    private void connectToChatServer(User owner) {
+    private boolean connectToChatServer(User owner) {
         try {
             if (currentSession != null) {
                 if (!currentSession.getServerType().equals("CHAT")) {
                     currentSession.close();
                 } else {
-                    return;
+                    return true;
                 }
             }
             currentSession = new ClientSessionHandler(new Socket(CHAT_SERVER_HOST, CHAT_SERVER_PORT), "CHAT", messageProcessor, owner);
             currentSession.handle();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
     }
 }

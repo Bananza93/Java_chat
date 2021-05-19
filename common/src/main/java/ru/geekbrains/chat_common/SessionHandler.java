@@ -1,4 +1,4 @@
-package ru.geekbrains.server.utils;
+package ru.geekbrains.chat_common;
 
 public interface SessionHandler {
     void handle();

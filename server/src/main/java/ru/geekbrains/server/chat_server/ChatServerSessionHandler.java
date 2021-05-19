@@ -2,7 +2,7 @@ package ru.geekbrains.server.chat_server;
 
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.User;
-import ru.geekbrains.server.utils.SessionHandler;
+import ru.geekbrains.chat_common.SessionHandler;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;

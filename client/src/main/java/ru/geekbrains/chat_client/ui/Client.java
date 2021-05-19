@@ -49,7 +49,7 @@ public class Client extends Application {
         stage.initStyle(StageStyle.DECORATED);
         stage.setResizable(false);
         stage.setTitle("POGGERS chat");
-        stage.getIcons().add(new Image("poggers.jpg"));
+        stage.getIcons().add(new Image("poggers_32x32.jpg"));
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Client.class.getResource("/AuthWindow.fxml"));
         stage.setScene(new Scene(loader.load()));
@@ -62,7 +62,7 @@ public class Client extends Application {
         stage.setMinWidth(500.0);
         stage.setMinHeight(300.0);
         stage.setTitle("POGGERS chat");
-        stage.getIcons().add(new Image("poggers.jpg"));
+        stage.getIcons().add(new Image("poggers_32x32.jpg"));
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Client.class.getResource("/ChatWindow.fxml"));
         stage.setScene(new Scene(loader.load()));
@@ -92,7 +92,7 @@ public class Client extends Application {
             window.setWidth(250.0);
             window.setHeight(350.0);
             window.setTitle("About POGGERS chat");
-            window.getIcons().add(new Image("poggers.jpg"));
+            window.getIcons().add(new Image("poggers_32x32.jpg"));
             window.setResizable(false);
             window.setX((chatStage.getX() + (chatStage.getWidth() / 2)) - (window.getWidth() / 2));
             window.setY((chatStage.getY() + (chatStage.getHeight() / 2)) - (window.getHeight() / 2));
