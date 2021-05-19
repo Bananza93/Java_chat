@@ -11,6 +11,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import ru.geekbrains.chat_client.network.ClientSessionHandler;
 import ru.geekbrains.chat_client.network.MessageProcessor;
@@ -176,5 +177,19 @@ public class ClientController implements Initializable {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public void loginByEnter(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.ENTER) {
+            authWindowLoginButton.fire();
+        }
+    }
+
+    public void focusToLoginField(MouseEvent mouseEvent) {
+        authWindowLoginField.requestFocus();
+    }
+
+    public void focusToPasswordField(MouseEvent mouseEvent) {
+        authWindowPasswordField.requestFocus();
     }
 }
