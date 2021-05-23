@@ -24,38 +24,45 @@ public class Client extends Application {
 
     @Override
     public void start(Stage stage) throws IOException {
-        createAuthStage(stage);
-        createChatStage(new Stage());
         showAuthStage();
     }
 
-    public static void showAuthStage() {
-        if (chatStage.isShowing()) chatStage.close();
+    public static void showAuthStage() throws IOException {
+        if (chatStage != null && chatStage.isShowing()) {
+            chatStage.close();
+            chatStage = null;
+        }
+        createAuthStage(new Stage());
         authStage.show();
     }
 
-    public static void showChatStage() {
-        if (authStage.isShowing()) authStage.close();
+    public static void showChatStage() throws IOException {
+        if (authStage != null && authStage.isShowing()) {
+            authStage.close();
+            authStage = null;
+        }
+        createChatStage(new Stage());
         chatStage.show();
     }
 
-    private void createAuthStage(Stage stage) throws IOException {
+    private static void createAuthStage(Stage stage) throws IOException {
         stage.initStyle(StageStyle.DECORATED);
         stage.setResizable(false);
         stage.setTitle("POGGERS chat");
-        stage.getIcons().add(new Image("poggers.jpg"));
+        stage.getIcons().add(new Image("poggers_32x32.jpg"));
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Client.class.getResource("/AuthWindow.fxml"));
         stage.setScene(new Scene(loader.load()));
+        stage.setOnCloseRequest(e -> System.exit(0));
         authStage = stage;
     }
 
-    private void createChatStage(Stage stage) throws IOException {
+    private static void createChatStage(Stage stage) throws IOException {
         stage.initStyle(StageStyle.DECORATED);
         stage.setMinWidth(500.0);
         stage.setMinHeight(300.0);
         stage.setTitle("POGGERS chat");
-        stage.getIcons().add(new Image("poggers.jpg"));
+        stage.getIcons().add(new Image("poggers_32x32.jpg"));
         FXMLLoader loader = new FXMLLoader();
         loader.setLocation(Client.class.getResource("/ChatWindow.fxml"));
         stage.setScene(new Scene(loader.load()));
@@ -85,7 +92,7 @@ public class Client extends Application {
             window.setWidth(250.0);
             window.setHeight(350.0);
             window.setTitle("About POGGERS chat");
-            window.getIcons().add(new Image("poggers.jpg"));
+            window.getIcons().add(new Image("poggers_32x32.jpg"));
             window.setResizable(false);
             window.setX((chatStage.getX() + (chatStage.getWidth() / 2)) - (window.getWidth() / 2));
             window.setY((chatStage.getY() + (chatStage.getHeight() / 2)) - (window.getHeight() / 2));

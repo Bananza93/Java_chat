@@ -1,7 +1,7 @@
 package ru.geekbrains.chat_client.ui;
 
-import javafx.application.Platform;
 import javafx.event.ActionEvent;
+import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -11,6 +11,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import ru.geekbrains.chat_client.network.ClientSessionHandler;
 import ru.geekbrains.chat_client.network.MessageProcessor;
@@ -35,16 +36,25 @@ public class ClientController implements Initializable {
     private static ClientSessionHandler currentSession;
 
     //AuthWindow vars
+    @FXML
     public TextField authWindowLoginField;
+    @FXML
     public PasswordField authWindowPasswordField;
+    @FXML
     public Button authWindowLoginButton;
+    @FXML
     public Button authWindowExitButton;
+    @FXML
     public Label authWindowStateLabel;
 
     //ChatWindow vars
+    @FXML
     public TextArea chatArea;
+    @FXML
     public ListView<User> onlineUsers;
+    @FXML
     public TextArea userMessage;
+    @FXML
     public Button sendButton;
 
     public void Dummy(ActionEvent actionEvent) {
@@ -58,8 +68,7 @@ public class ClientController implements Initializable {
             return;
         }
         authWindowStateLabel.setText("");
-        connectToAuthServer();
-        messageProcessor.sendAuthRequest(login, password);
+        if (connectToAuthServer()) messageProcessor.sendAuthRequest(login, password);
     }
 
     public void sendMessageBySendButton(ActionEvent actionEvent) {
@@ -70,8 +79,8 @@ public class ClientController implements Initializable {
         if (keyEvent.getCode() == KeyCode.ENTER) {
             if (keyEvent.isShiftDown()) {
                 userMessage.appendText("\n");
-                System.out.println("shift is down");
             } else {
+                userMessage.setText(userMessage.getText().substring(0, userMessage.getText().length() - 1));
                 sendMessage();
             }
         }
@@ -80,7 +89,6 @@ public class ClientController implements Initializable {
     public void sendMessage() {
         String rawMessage = userMessage.getText();
         if (rawMessage.length() == 0) return;
-        rawMessage = rawMessage.trim();
         SimpleDateFormat pattern = new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss");
         String prefix;
         User toUser = onlineUsers.getSelectionModel().getSelectedItem();
@@ -89,7 +97,7 @@ public class ClientController implements Initializable {
             prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME:\u00A0";
         } else {
             messageProcessor.sendPrivateMessage(rawMessage, toUser);
-            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME\u00A0->\u00A0" + toUser.getUsername()+ ":\u00A0";
+            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME\u00A0->\u00A0" + toUser.getUsername() + ":\u00A0";
         }
         chatArea.appendText(prefix + rawMessage + System.lineSeparator());
         userMessage.clear();
@@ -100,7 +108,7 @@ public class ClientController implements Initializable {
     }
 
     public void closeProgram(ActionEvent actionEvent) {
-        Platform.exit();
+        System.exit(0);
     }
 
     public void toGitHubPage(ActionEvent actionEvent) throws URISyntaxException, IOException {
@@ -120,46 +128,68 @@ public class ClientController implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        messageProcessor = new MessageProcessor(this);
+        if (messageProcessor == null) {
+            messageProcessor = new MessageProcessor(this);
+        } else {
+            messageProcessor.setController(this);
+        }
     }
 
 
     public void loadChatWindow(User owner) throws IOException {
         connectToChatServer(owner);
-        messageProcessor.sendSubscribeRequest(owner);
-        Client.chatStage.setTitle(Client.chatStage.getTitle() + " [User: " + owner.getUsername() + "]");
         Client.showChatStage();
+        Client.chatStage.setTitle(Client.chatStage.getTitle() + " [User: " + owner.getUsername() + "]");
+        messageProcessor.sendSubscribeRequest(owner);
     }
 
-    private void connectToAuthServer() {
+    private boolean connectToAuthServer() {
         try {
             if (currentSession != null) {
                 if (!currentSession.getServerType().equals("AUTH")) {
                     currentSession.close();
                 } else {
-                    return;
+                    return true;
                 }
             }
             currentSession = new ClientSessionHandler(new Socket(AUTH_SERVER_HOST, AUTH_SERVER_PORT), "AUTH", messageProcessor);
             currentSession.handle();
+            return true;
         } catch (IOException e) {
             authWindowStateLabel.setText("Auth server unavailable.");
         }
+        return false;
     }
 
-    private void connectToChatServer(User owner) {
+    private boolean connectToChatServer(User owner) {
         try {
             if (currentSession != null) {
                 if (!currentSession.getServerType().equals("CHAT")) {
                     currentSession.close();
                 } else {
-                    return;
+                    return true;
                 }
             }
             currentSession = new ClientSessionHandler(new Socket(CHAT_SERVER_HOST, CHAT_SERVER_PORT), "CHAT", messageProcessor, owner);
             currentSession.handle();
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return false;
+    }
+
+    public void loginByEnter(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.ENTER) {
+            authWindowLoginButton.fire();
+        }
+    }
+
+    public void focusToLoginField(MouseEvent mouseEvent) {
+        authWindowLoginField.requestFocus();
+    }
+
+    public void focusToPasswordField(MouseEvent mouseEvent) {
+        authWindowPasswordField.requestFocus();
     }
 }

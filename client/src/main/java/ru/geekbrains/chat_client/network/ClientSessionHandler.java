@@ -1,5 +1,6 @@
 package ru.geekbrains.chat_client.network;
 
+import ru.geekbrains.chat_common.SessionHandler;
 import ru.geekbrains.chat_common.User;
 
 import java.io.DataInputStream;
@@ -7,7 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 
-public class ClientSessionHandler {
+public class ClientSessionHandler implements SessionHandler {
     private MessageProcessor messageProcessor;
     private String serverType;
     private Socket socket;
@@ -34,13 +35,18 @@ public class ClientSessionHandler {
         this.sessionOwner = sessionOwner;
     }
 
+    @Override
     public void handle() {
         messageProcessor.setCurrentSession(this);
         (sessionThread = new Thread(this::readMessage)).start();
     }
 
+    @Override
     public void close() {
         try {
+            if (messageProcessor.getCurrentSession().getServerType().equals(this.serverType)) {
+                messageProcessor.setCurrentSession(null);
+            }
             socket.close();
             sessionThread.interrupt();
         } catch (IOException e) {

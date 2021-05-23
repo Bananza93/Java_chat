@@ -23,8 +23,8 @@ public class SimpleAuthServer implements AuthServer {
     private DataOutputStream toChatServer;
     private boolean isConnectedToChatServer;
 
-    private List<User> tempUserDatabase;
-    private Set<AuthServerSessionHandler> activeSessions;
+    private final List<User> tempUserDatabase;
+    private final Set<AuthServerSessionHandler> activeSessions;
 
 
     public SimpleAuthServer() {
@@ -39,10 +39,10 @@ public class SimpleAuthServer implements AuthServer {
     @Override
     public void start() {
         try (ServerSocket authServerSocket = new ServerSocket(AUTH_SERVER_PORT)) {
-            System.out.println("Auth server started");
+            System.out.println("Auth server started.");
             connectionWithChatServerThread();
             while (true) {
-                System.out.println("Waiting for connection");
+                System.out.println("Waiting for connection...");
                 Socket socket = authServerSocket.accept();
                 System.out.println("Client connected (IP: " + socket.getInetAddress().getHostAddress() + ")");
                 new AuthServerSessionHandler(socket, this).handle();
@@ -60,13 +60,16 @@ public class SimpleAuthServer implements AuthServer {
             activeSession.close();
         }
         System.out.println("Auth server stopped.");
+        System.exit(0);
     }
 
     public synchronized void addSession(AuthServerSessionHandler session) {
+        System.out.println("Session added");
         activeSessions.add(session);
     }
 
     public synchronized void removeSession(AuthServerSessionHandler session) {
+        System.out.println("Session removed");
         activeSessions.remove(session);
     }
 
@@ -101,7 +104,6 @@ public class SimpleAuthServer implements AuthServer {
         while (isConnectedToChatServer) {
             synchronized (mon1) {
                 try {
-                    //Если действительно что-то будем ждать от сервера, то придумать что-то другое
                     fromChatServer.read();
                     mon1.wait(3000);
                 } catch (InterruptedException e) {
