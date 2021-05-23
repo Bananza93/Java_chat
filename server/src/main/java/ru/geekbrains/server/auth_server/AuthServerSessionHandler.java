@@ -71,6 +71,12 @@ public class AuthServerSessionHandler implements SessionHandler {
                 Message message = Message.messageFromJson(rawMessage);
                 if (message.getMessageType() == MessageType.AUTH_REQUEST) {
                     authenticateUser(message.getMessageBody());
+                } else if (message.getMessageType() == MessageType.CREATE_USER_REQUEST) {
+                    createUser(message.getMessageBody());
+                } else if (message.getMessageType() == MessageType.CHANGE_PASSWORD_REQUEST) {
+                    changeUserPassword(message.getMessageBody());
+                } else if (message.getMessageType() == MessageType.CHANGE_USERNAME_REQUEST) {
+                    changeUserUsername(message.getMessageBody());
                 } else {
                     System.out.println("Incorrect message type: " + message.getMessageType());
                 }
@@ -91,7 +97,17 @@ public class AuthServerSessionHandler implements SessionHandler {
         }
     }
 
-    private synchronized void authenticateUser(String messageBody) {
+    private void createUser(String messageBody) {
+
+    }
+
+    private void changeUserPassword(String messageBody) {
+    }
+
+    private void changeUserUsername(String messageBody) {
+    }
+
+    private void authenticateUser(String messageBody) {
         Message response = new Message();
         if (!server.isConnectedToChatServer()) {
             response.setMessageType(MessageType.AUTH_FAILURE);

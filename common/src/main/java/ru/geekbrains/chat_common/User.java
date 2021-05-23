@@ -3,14 +3,28 @@ package ru.geekbrains.chat_common;
 import java.util.Objects;
 
 public class User {
+    private int id;
     private String username;
     private String login;
     private String password;
 
     public User(String username, String login, String password) {
+        this(0, username, login, password);
+    }
+
+    public User(int id, String username, String login, String password) {
+        this.id = id;
         this.username = username;
         this.login = login;
         this.password = password;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 
     public String getUsername() {

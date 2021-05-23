@@ -7,33 +7,36 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.*;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-public class SimpleAuthServer implements AuthServer {
+public class AuthServerWithDB implements AuthServer{
 
     private static final int AUTH_SERVER_PORT = 22222;
     private static final String CHAT_SERVER_HOST = "localhost";
     private static final int CHAT_SERVER_PORT = 11111;
-    private final Object mon1 = new Object();
 
     private Socket chatServerSocket;
     private DataInputStream fromChatServer;
     private DataOutputStream toChatServer;
     private boolean isConnectedToChatServer;
+    private final Object mon1 = new Object();
 
-    private final List<User> tempUserDatabase;
+    private Connection dbConnection;
+    private PreparedStatement statement;
+    private final String selectUser = "SELECT * FROM users WHERE login = ? AND password = ?;";
+    private boolean isConnectedTDB;
+    private final Object mon2 = new Object();
+
     private final Set<AuthServerSessionHandler> activeSessions;
 
 
-    public SimpleAuthServer() {
-        tempUserDatabase = List.of(new User("user1", "log1", "pass"),
-                new User("user2", "log2", "pass"),
-                new User("user3", "log3", "pass")
-        );
+    public AuthServerWithDB() {
         activeSessions = new HashSet<>();
         isConnectedToChatServer = false;
+        isConnectedTDB = false;
+
     }
 
     @Override
@@ -41,6 +44,7 @@ public class SimpleAuthServer implements AuthServer {
         try (ServerSocket authServerSocket = new ServerSocket(AUTH_SERVER_PORT)) {
             System.out.println("Auth server started.");
             connectionWithChatServerThread();
+            connectToDB();
             while (true) {
                 System.out.println("Waiting for connection...");
                 Socket socket = authServerSocket.accept();
@@ -59,6 +63,10 @@ public class SimpleAuthServer implements AuthServer {
         for (AuthServerSessionHandler activeSession : activeSessions) {
             activeSession.close();
         }
+        try {
+            chatServerSocket.close();
+            dbConnection.close();
+        } catch (IOException | SQLException e) {/*do nothing*/}
         System.out.println("Auth server stopped.");
         System.exit(0);
     }
@@ -77,6 +85,25 @@ public class SimpleAuthServer implements AuthServer {
         Thread t = new Thread(this::connectToChatServer);
         t.setDaemon(true);
         t.start();
+    }
+
+    private void connectToDB() {
+        while (!isConnectedTDB) {
+            synchronized (mon2) {
+                try {
+                    System.out.println("Trying to connect with database...");
+                    dbConnection = DriverManager.getConnection("jdbc:sqlite:server/src/main/resources/java_chat.db");
+                    statement = dbConnection.prepareStatement(selectUser);
+                    isConnectedTDB = true;
+                    System.out.println("Successfully connected to database.");
+                } catch (SQLException e) {
+                    try {
+                        System.out.println("Database not response.");
+                        mon2.wait(3000);
+                    } catch (InterruptedException interruptedException) {/*do nothing*/}
+                }
+            }
+        }
     }
 
     private void connectToChatServer() {
@@ -119,10 +146,13 @@ public class SimpleAuthServer implements AuthServer {
 
     @Override
     public synchronized User getUserByLoginAndPassword(String login, String password) {
-        for (User user : tempUserDatabase) {
-            if (user.getLogin().equals(login) && user.getPassword().equals(password)) {
-                return user;
-            }
+        try {
+            statement.setString(1, login);
+            statement.setString(2, password);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) return new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return null;
     }
