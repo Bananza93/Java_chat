@@ -35,12 +35,13 @@ public class MessageProcessor {
     public synchronized void incomingMessage(String jsonMessage) throws IOException {
         System.out.println("Message received: " + jsonMessage);
         Message message = Message.messageFromJson(jsonMessage);
-        if (message.getMessageType().equals(MessageType.AUTH_FAILURE)) {
+        MessageType type = message.getMessageType();
+        if (type.equals(MessageType.AUTH_FAILURE)) {
             Platform.runLater(() -> {
                 controller.authWindowPasswordField.clear();
                 controller.authWindowStateLabel.setText(message.getMessageBody());
             });
-        } else if (message.getMessageType().equals(MessageType.AUTH_SUCCESS)) {
+        } else if (type.equals(MessageType.AUTH_SUCCESS)) {
             Platform.runLater(() -> {
                 try {
                     controller.loadChatWindow(message.getToUser());
@@ -48,7 +49,7 @@ public class MessageProcessor {
                     e.printStackTrace();
                 }
             });
-        } else if (message.getMessageType().equals(MessageType.PUBLIC)) {
+        } else if (type.equals(MessageType.PUBLIC)) {
             if (message.getFromUser().getUsername().equals(currentSession.getSessionOwner().getUsername())) return;
             Platform.runLater(() -> {
                 String msg = "[" + new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss").format(message.getMessageDate())
@@ -57,7 +58,7 @@ public class MessageProcessor {
                         + System.lineSeparator();
                 controller.chatArea.appendText(msg);
             });
-        } else if (message.getMessageType().equals(MessageType.ONLINE_USERS_LIST)) {
+        } else if (type.equals(MessageType.ONLINE_USERS_LIST)) {
             Platform.runLater(() -> {
                 Set<User> users = message.getOnlineUsersSet();
                 users.remove(currentSession.getSessionOwner());
@@ -65,7 +66,7 @@ public class MessageProcessor {
                 controller.onlineUsers.getItems().add(0, new User("PUBLIC", "", ""));
                 controller.onlineUsers.getSelectionModel().selectFirst();
             });
-        } else if (message.getMessageType().equals(MessageType.PRIVATE)) {
+        } else if (type.equals(MessageType.PRIVATE)) {
             Platform.runLater(() -> {
                 String msg = "[" + new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss").format(message.getMessageDate())
                         + "]\u00A0" + message.getFromUser().getUsername()
@@ -73,6 +74,10 @@ public class MessageProcessor {
                         + System.lineSeparator();
                 controller.chatArea.appendText(msg);
             });
+        } else if (type.equals(MessageType.CREATE_USER_SUCCESS)) {
+
+        } else if (type.equals(MessageType.CREATE_USER_FAILURE)) {
+
         }
     }
 
@@ -119,6 +124,16 @@ public class MessageProcessor {
             Message message = new Message();
             message.setMessageType(MessageType.AUTH_REQUEST);
             message.setMessageBody(login + ":" + password);
+            message.setMessageDate(new Date());
+            outgoingMessage(message.messageToJson());
+        }).start();
+    }
+
+    public void sendCreateUserRequest(String username, String login, String password) {
+        new Thread(() -> {
+            Message message = new Message();
+            message.setMessageType(MessageType.CREATE_USER_REQUEST);
+            message.setMessageBody(username + ":" + login + ":" + password);
             message.setMessageDate(new Date());
             outgoingMessage(message.messageToJson());
         }).start();

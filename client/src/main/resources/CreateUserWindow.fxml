@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox prefHeight="500.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.geekbrains.chat_client.ui.ClientController">
+    <children>
+        <Label text="Create your account">
+            <font>
+                <Font name="Arial" size="22.0" />
+            </font>
+            <VBox.margin>
+                <Insets bottom="7.0" left="20.0" top="7.0" />
+            </VBox.margin>
+        </Label>
+        <Separator prefWidth="200.0">
+            <VBox.margin>
+                <Insets bottom="15.0" />
+            </VBox.margin>
+        </Separator>
+        <Label text="Username">
+            <VBox.margin>
+                <Insets bottom="3.0" left="20.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </Label>
+        <TextField fx:id="createUserUsernameField" promptText="Username">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </TextField>
+        <Label fx:id="createUserUsernameError" textFill="RED" wrapText="true">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </Label>
+        <Label text="Login">
+            <VBox.margin>
+                <Insets bottom="3.0" left="20.0" top="5.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </Label>
+        <TextField fx:id="createUserLoginField" promptText="Login">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </TextField>
+        <Label fx:id="createUserLoginError" textFill="RED" wrapText="true">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </Label>
+        <Label text="Password">
+            <VBox.margin>
+                <Insets bottom="3.0" left="20.0" top="5.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </Label>
+        <PasswordField fx:id="createUserPasswordField" promptText="Password">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </PasswordField>
+      <Label fx:id="createUserPasswordError" textFill="RED" wrapText="true">
+         <VBox.margin>
+            <Insets left="20.0" right="20.0" />
+         </VBox.margin>
+         <font>
+            <Font name="Arial" size="14.0" />
+         </font>
+      </Label>
+        <Label text="Confirm password">
+            <VBox.margin>
+                <Insets bottom="3.0" left="20.0" top="5.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </Label>
+        <PasswordField fx:id="createUserConfirmPasswordField" promptText="Confirm password">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0" />
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0" />
+            </font>
+        </PasswordField>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="20.0">
+            <children>
+                <Button onAction="#createUserSubmitAction" prefWidth="70.0" text="Submit">
+                    <font>
+                        <Font name="Arial" size="14.0" />
+                    </font>
+                </Button>
+                <Button prefWidth="70.0" text="Clear">
+                    <font>
+                        <Font name="Arial" size="14.0" />
+                    </font>
+                </Button>
+                <Button onAction="#openLoginScene" prefWidth="70.0" text="Back">
+                    <font>
+                        <Font name="Arial" size="14.0" />
+                    </font>
+                </Button>
+            </children>
+        </HBox>
+    </children>
+</VBox>

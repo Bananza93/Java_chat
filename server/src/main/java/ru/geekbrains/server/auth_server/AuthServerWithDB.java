@@ -11,7 +11,7 @@ import java.sql.*;
 import java.util.HashSet;
 import java.util.Set;
 
-public class AuthServerWithDB implements AuthServer{
+public class AuthServerWithDB implements AuthServer {
 
     private static final int AUTH_SERVER_PORT = 22222;
     private static final String CHAT_SERVER_HOST = "localhost";
@@ -26,6 +26,9 @@ public class AuthServerWithDB implements AuthServer{
     private Connection dbConnection;
     private PreparedStatement statement;
     private final String selectUser = "SELECT * FROM users WHERE login = ? AND password = ?;";
+    private final String selectCheckUsername = "SELECT COUNT(*) FROM users WHERE username = ?;";
+    private final String selectCheckLogin = "SELECT COUNT(*) FROM users WHERE login = ?;";
+    private final String insertNewUser = "INSERT INTO users(username, login, password) VALUES (?, ?, ?);";
     private boolean isConnectedTDB;
     private final Object mon2 = new Object();
 
@@ -72,13 +75,13 @@ public class AuthServerWithDB implements AuthServer{
     }
 
     public synchronized void addSession(AuthServerSessionHandler session) {
-        System.out.println("Session added");
         activeSessions.add(session);
+        System.out.println("Session added");
     }
 
     public synchronized void removeSession(AuthServerSessionHandler session) {
-        System.out.println("Session removed");
         activeSessions.remove(session);
+        System.out.println("Session removed");
     }
 
     private void connectionWithChatServerThread() {
@@ -93,7 +96,6 @@ public class AuthServerWithDB implements AuthServer{
                 try {
                     System.out.println("Trying to connect with database...");
                     dbConnection = DriverManager.getConnection("jdbc:sqlite:server/src/main/resources/java_chat.db");
-                    statement = dbConnection.prepareStatement(selectUser);
                     isConnectedTDB = true;
                     System.out.println("Successfully connected to database.");
                 } catch (SQLException e) {
@@ -147,6 +149,7 @@ public class AuthServerWithDB implements AuthServer{
     @Override
     public synchronized User getUserByLoginAndPassword(String login, String password) {
         try {
+            statement = dbConnection.prepareStatement(selectUser);
             statement.setString(1, login);
             statement.setString(2, password);
             ResultSet rs = statement.executeQuery();
@@ -158,7 +161,34 @@ public class AuthServerWithDB implements AuthServer{
     }
 
     @Override
-    public boolean isConnectedToChatServer() {
+    public synchronized boolean isUsernameExists(String username) throws SQLException {
+        statement = dbConnection.prepareStatement(selectCheckUsername);
+        statement.setString(1, username);
+        ResultSet rs = statement.executeQuery();
+        rs.next();
+        return rs.getInt(1) != 0;
+    }
+
+    @Override
+    public synchronized boolean isLoginExists(String login) throws SQLException {
+        statement = dbConnection.prepareStatement(selectCheckLogin);
+        statement.setString(1, login);
+        ResultSet rs = statement.executeQuery();
+        rs.next();
+        return rs.getInt(1) != 0;
+    }
+
+    @Override
+    public synchronized boolean createNewUser(String username, String login, String password) throws SQLException {
+        statement = dbConnection.prepareStatement(insertNewUser);
+        statement.setString(1, username);
+        statement.setString(2, login);
+        statement.setString(3, password);
+        return statement.executeUpdate() == 1;
+    }
+
+    @Override
+    public synchronized boolean isConnectedToChatServer() {
         return isConnectedToChatServer;
     }
 }

@@ -15,6 +15,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.Stage;
 import ru.geekbrains.chat_client.network.ClientSessionHandler;
 import ru.geekbrains.chat_client.network.MessageProcessor;
+import ru.geekbrains.chat_common.Message;
+import ru.geekbrains.chat_common.MessageType;
 import ru.geekbrains.chat_common.User;
 
 import java.awt.*;
@@ -36,6 +38,7 @@ public class ClientController implements Initializable {
     private static ClientSessionHandler currentSession;
 
     //AuthWindow vars
+    //Login scene vars
     @FXML
     public TextField authWindowLoginField;
     @FXML
@@ -46,6 +49,25 @@ public class ClientController implements Initializable {
     public Button authWindowExitButton;
     @FXML
     public Label authWindowStateLabel;
+    @FXML
+    public Button authWindowSignupButton;
+    @FXML
+    public Button authWindowChangePasswordButton;
+    //CreateUser scene vars
+    @FXML
+    public TextField createUserUsernameField;
+    @FXML
+    public TextField createUserLoginField;
+    @FXML
+    public PasswordField createUserPasswordField;
+    @FXML
+    public PasswordField createUserConfirmPasswordField;
+    @FXML
+    public Label createUserUsernameError;
+    @FXML
+    public Label createUserLoginError;
+    @FXML
+    public Label createUserPasswordError;
 
     //ChatWindow vars
     @FXML
@@ -56,6 +78,7 @@ public class ClientController implements Initializable {
     public TextArea userMessage;
     @FXML
     public Button sendButton;
+
 
     public void Dummy(ActionEvent actionEvent) {
     }
@@ -191,5 +214,47 @@ public class ClientController implements Initializable {
 
     public void focusToPasswordField(MouseEvent mouseEvent) {
         authWindowPasswordField.requestFocus();
+    }
+
+    public void openLoginScene(ActionEvent actionEvent) throws IOException {
+        Client.showLoginScene();
+    }
+
+    public void openCreateUserScene(ActionEvent actionEvent) throws IOException {
+        Client.showCreateUserScene();
+    }
+
+    public void openChangePasswordScene(ActionEvent actionEvent) throws IOException {
+        Client.showChangePasswordScene();
+    }
+
+    public void createUserSubmitAction(ActionEvent actionEvent) {
+        clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
+        boolean isIncorrectInput = false;
+        String username;
+        String login;
+        String password;
+        if ((username = createUserUsernameField.getText()).isEmpty()) {
+            isIncorrectInput = true;
+            createUserUsernameError.setText("Enter your username");
+        }
+        if ((login = createUserLoginField.getText()).isEmpty()) {
+            isIncorrectInput = true;
+            createUserLoginError.setText("Enter your login");
+        }
+        if ((password = createUserPasswordField.getText()).isEmpty()) {
+            isIncorrectInput = true;
+            createUserPasswordError.setText("Enter your password");
+        } else if (!password.equals(createUserConfirmPasswordField.getText())) {
+            isIncorrectInput = true;
+            createUserPasswordError.setText("Passwords doesn't match!");
+        }
+        if (!isIncorrectInput && connectToAuthServer()) messageProcessor.sendCreateUserRequest(username, login, password);
+    }
+
+    private void clearErrorLabels(Label... labels) {
+        for (Label label : labels) {
+            label.setText("");
+        }
     }
 }

@@ -43,7 +43,7 @@
         </PasswordField>
         <Label onMouseClicked="#focusToLoginField" prefWidth="80.0" text="Login">
             <font>
-                <Font name="Arial" size="16.0" />
+                <Font name="Arial" size="14.0" />
             </font>
             <GridPane.margin>
                 <Insets left="5.0" />
@@ -51,7 +51,7 @@
         </Label>
         <Label onMouseClicked="#focusToPasswordField" prefWidth="80.0" text="Password" GridPane.rowIndex="1">
             <font>
-                <Font name="Arial" size="16.0" />
+                <Font name="Arial" size="14.0" />
             </font>
             <GridPane.margin>
                 <Insets left="5.0" />
@@ -87,7 +87,7 @@
          <Insets top="5.0" />
       </VBox.margin>
     </HBox>
-   <Button mnemonicParsing="false" prefWidth="135.0" text="Sign up">
+   <Button fx:id="authWindowSignupButton" onAction="#openCreateUserScene" prefWidth="135.0" text="Sign up">
       <font>
          <Font name="Arial" size="14.0" />
       </font>
@@ -95,7 +95,7 @@
          <Insets top="25.0" />
       </VBox.margin>
    </Button>
-   <Button mnemonicParsing="false" prefWidth="135.0" text="Change password">
+   <Button fx:id="authWindowChangePasswordButton" onAction="#openChangePasswordScene" prefWidth="135.0" text="Change password">
       <font>
          <Font name="Arial" size="14.0" />
       </font>
