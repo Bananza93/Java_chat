@@ -2,6 +2,7 @@ package ru.geekbrains.chat_client.network;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
 import ru.geekbrains.chat_client.ui.ClientController;
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.MessageType;
@@ -35,49 +36,51 @@ public class MessageProcessor {
     public synchronized void incomingMessage(String jsonMessage) throws IOException {
         System.out.println("Message received: " + jsonMessage);
         Message message = Message.messageFromJson(jsonMessage);
-        MessageType type = message.getMessageType();
-        if (type.equals(MessageType.AUTH_FAILURE)) {
-            Platform.runLater(() -> {
-                controller.authWindowPasswordField.clear();
-                controller.authWindowStateLabel.setText(message.getMessageBody());
-            });
-        } else if (type.equals(MessageType.AUTH_SUCCESS)) {
-            Platform.runLater(() -> {
-                try {
-                    controller.loadChatWindow(message.getToUser());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-        } else if (type.equals(MessageType.PUBLIC)) {
-            if (message.getFromUser().getUsername().equals(currentSession.getSessionOwner().getUsername())) return;
-            Platform.runLater(() -> {
-                String msg = "[" + new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss").format(message.getMessageDate())
-                        + "]\u00A0" + message.getFromUser().getUsername()
-                        + ":\u00A0" + message.getMessageBody()
-                        + System.lineSeparator();
-                controller.chatArea.appendText(msg);
-            });
-        } else if (type.equals(MessageType.ONLINE_USERS_LIST)) {
-            Platform.runLater(() -> {
-                Set<User> users = message.getOnlineUsersSet();
-                users.remove(currentSession.getSessionOwner());
-                controller.onlineUsers.setItems(FXCollections.observableArrayList(users));
-                controller.onlineUsers.getItems().add(0, new User("PUBLIC", "", ""));
-                controller.onlineUsers.getSelectionModel().selectFirst();
-            });
-        } else if (type.equals(MessageType.PRIVATE)) {
-            Platform.runLater(() -> {
-                String msg = "[" + new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss").format(message.getMessageDate())
-                        + "]\u00A0" + message.getFromUser().getUsername()
-                        + "\u00A0->\u00A0ME:\u00A0" + message.getMessageBody()
-                        + System.lineSeparator();
-                controller.chatArea.appendText(msg);
-            });
-        } else if (type.equals(MessageType.CREATE_USER_SUCCESS)) {
-
-        } else if (type.equals(MessageType.CREATE_USER_FAILURE)) {
-
+        switch (message.getMessageType()) {
+            case AUTH_FAILURE ->
+                Platform.runLater(() -> {
+                    controller.authWindowPasswordField.clear();
+                    controller.authWindowStateLabel.setText(message.getMessageBody());
+                });
+            case AUTH_SUCCESS ->
+                Platform.runLater(() -> {
+                    try {
+                        controller.loadChatWindow(message.getToUser());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            case PUBLIC -> {
+                if (message.getFromUser().getUsername().equals(currentSession.getSessionOwner().getUsername())) return;
+                Platform.runLater(() -> {
+                    String msg = "[" + new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss").format(message.getMessageDate())
+                            + "]\u00A0" + message.getFromUser().getUsername()
+                            + ":\u00A0" + message.getMessageBody()
+                            + System.lineSeparator();
+                    controller.chatArea.appendText(msg);
+                });
+            }
+            case ONLINE_USERS_LIST ->
+                Platform.runLater(() -> {
+                    Set<User> users = message.getOnlineUsersSet();
+                    users.remove(currentSession.getSessionOwner());
+                    controller.onlineUsers.setItems(FXCollections.observableArrayList(users));
+                    controller.onlineUsers.getItems().add(0, new User("PUBLIC", "", ""));
+                    controller.onlineUsers.getSelectionModel().selectFirst();
+                });
+            case PRIVATE ->
+                Platform.runLater(() -> {
+                    String msg = "[" + new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss").format(message.getMessageDate())
+                            + "]\u00A0" + message.getFromUser().getUsername()
+                            + "\u00A0->\u00A0ME:\u00A0" + message.getMessageBody()
+                            + System.lineSeparator();
+                    controller.chatArea.appendText(msg);
+                });
+            case CREATE_USER_USERNAME_EXISTS ->
+                    Platform.runLater(() -> controller.createUserUsernameError.setText(message.getMessageBody()));
+            case CREATE_USER_LOGIN_EXISTS ->
+                Platform.runLater(() -> controller.createUserLoginError.setText(message.getMessageBody()));
+            case CREATE_USER_SUCCESS -> Platform.runLater(() -> controller.createUserBackButton.fire());
         }
     }
 

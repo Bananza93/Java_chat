@@ -4,6 +4,7 @@ import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.MessageType;
 import ru.geekbrains.chat_common.User;
 import ru.geekbrains.chat_common.SessionHandler;
+import ru.geekbrains.server.auth_server.db.DatabaseManager;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -20,6 +21,7 @@ public class AuthServerSessionHandler implements SessionHandler {
     private Timer timeoutTimer;
     private Socket socket;
     private AuthServer server;
+    private DatabaseManager dbManager;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
 
@@ -33,6 +35,11 @@ public class AuthServerSessionHandler implements SessionHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public AuthServerSessionHandler(Socket socket, AuthServer authServer, DatabaseManager dbManager) {
+        this(socket, authServer);
+        this.dbManager = dbManager;
     }
 
     @Override
@@ -51,9 +58,7 @@ public class AuthServerSessionHandler implements SessionHandler {
                 socket.close();
                 sessionThread.interrupt();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) {/*do nothing*/}
     }
 
     private void createTimeoutTask() {
@@ -104,10 +109,10 @@ public class AuthServerSessionHandler implements SessionHandler {
         boolean isUsernameExists;
         boolean isLoginExists;
         try {
-            isUsernameExists = server.isUsernameExists(userData[0]);
-            isLoginExists = server.isLoginExists(userData[1]);
+            isUsernameExists = dbManager.isUsernameExists(userData[0]);
+            isLoginExists = dbManager.isLoginExists(userData[1]);
             if (!isUsernameExists && !isLoginExists) {
-                if (server.createNewUser(userData[0], userData[1], userData[2])) {
+                if (dbManager.createNewUser(userData[0], userData[1], userData[2])) {
                     response.setMessageType(MessageType.CREATE_USER_SUCCESS);
                     response.setMessageBody("User " + userData[0] + " (login: " + userData[1] + ") successfully created!");
                     sendMessage(response);
@@ -128,7 +133,7 @@ public class AuthServerSessionHandler implements SessionHandler {
             }
         } catch (SQLException e) {
             response.setMessageType(MessageType.CREATE_USER_FAILURE);
-            response.setMessageBody("Unexpected error. Please try again later.");
+            response.setMessageBody("Service currently unavailable. Please try again later.");
             sendMessage(response);
         }
     }

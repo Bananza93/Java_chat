@@ -12,6 +12,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import ru.geekbrains.chat_client.network.ClientSessionHandler;
 import ru.geekbrains.chat_client.network.MessageProcessor;
@@ -40,6 +41,8 @@ public class ClientController implements Initializable {
     //AuthWindow vars
     //Login scene vars
     @FXML
+    public VBox loginView;
+    @FXML
     public TextField authWindowLoginField;
     @FXML
     public PasswordField authWindowPasswordField;
@@ -55,6 +58,8 @@ public class ClientController implements Initializable {
     public Button authWindowChangePasswordButton;
     //CreateUser scene vars
     @FXML
+    public VBox createUserView;
+    @FXML
     public TextField createUserUsernameField;
     @FXML
     public TextField createUserLoginField;
@@ -68,6 +73,10 @@ public class ClientController implements Initializable {
     public Label createUserLoginError;
     @FXML
     public Label createUserPasswordError;
+    @FXML
+    public Button createUserClearButton;
+    @FXML
+    public Button createUserBackButton;
 
     //ChatWindow vars
     @FXML
@@ -79,6 +88,14 @@ public class ClientController implements Initializable {
     @FXML
     public Button sendButton;
 
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        if (messageProcessor == null) {
+            messageProcessor = new MessageProcessor(this);
+        } else {
+            messageProcessor.setController(this);
+        }
+    }
 
     public void Dummy(ActionEvent actionEvent) {
     }
@@ -149,15 +166,6 @@ public class ClientController implements Initializable {
         stage.close();
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        if (messageProcessor == null) {
-            messageProcessor = new MessageProcessor(this);
-        } else {
-            messageProcessor.setController(this);
-        }
-    }
-
 
     public void loadChatWindow(User owner) throws IOException {
         connectToChatServer(owner);
@@ -169,14 +177,19 @@ public class ClientController implements Initializable {
     private boolean connectToAuthServer() {
         try {
             if (currentSession != null) {
+                System.out.println("in if 1");
                 if (!currentSession.getServerType().equals("AUTH")) {
+                    System.out.println("in if 2");
                     currentSession.close();
                 } else {
+                    System.out.println("in else");
                     return true;
                 }
             }
+            System.out.println("after if");
             currentSession = new ClientSessionHandler(new Socket(AUTH_SERVER_HOST, AUTH_SERVER_PORT), "AUTH", messageProcessor);
             currentSession.handle();
+            System.out.println("session created");
             return true;
         } catch (IOException e) {
             authWindowStateLabel.setText("Auth server unavailable.");
@@ -216,16 +229,25 @@ public class ClientController implements Initializable {
         authWindowPasswordField.requestFocus();
     }
 
-    public void openLoginScene(ActionEvent actionEvent) throws IOException {
-        Client.showLoginScene();
+    public void showLoginView(ActionEvent actionEvent) throws IOException {
+        if (actionEvent.getSource() instanceof Button) {
+            switch (((Button) actionEvent.getSource()).getId()) {
+                case "createUserBackButton" -> {
+                    createUserClearButton.fire();
+                    createUserView.setVisible(false);
+                }
+            }
+        }
+        loginView.setVisible(true);
     }
 
-    public void openCreateUserScene(ActionEvent actionEvent) throws IOException {
-        Client.showCreateUserScene();
+    public void showCreateUserView(ActionEvent actionEvent) throws IOException {
+        clearTextInputs(authWindowPasswordField);
+        loginView.setVisible(false);
+        createUserView.setVisible(true);
     }
 
-    public void openChangePasswordScene(ActionEvent actionEvent) throws IOException {
-        Client.showChangePasswordScene();
+    public void showChangePasswordView(ActionEvent actionEvent) throws IOException {
     }
 
     public void createUserSubmitAction(ActionEvent actionEvent) {
@@ -256,5 +278,24 @@ public class ClientController implements Initializable {
         for (Label label : labels) {
             label.setText("");
         }
+    }
+
+    private void clearTextInputs(TextInputControl... textInputElement) {
+        for (TextInputControl textInputControl : textInputElement) {
+            textInputControl.clear();
+        }
+    }
+
+    public static ClientSessionHandler getCurrentSession() {
+        return currentSession;
+    }
+
+    public static void setCurrentSession(ClientSessionHandler sessionHandler) {
+        currentSession = null;
+    }
+
+    public void createUserClearFormsAction(ActionEvent actionEvent) {
+        clearTextInputs(createUserUsernameField, createUserLoginField, createUserPasswordField, createUserConfirmPasswordField);
+        clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
     }
 }

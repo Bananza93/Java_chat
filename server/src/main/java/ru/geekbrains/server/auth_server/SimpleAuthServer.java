@@ -7,16 +7,11 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 public class SimpleAuthServer implements AuthServer {
-    @Override
-    public boolean createNewUser(String username, String login, String password) throws SQLException {
-        return false;
-    }
 
     private static final int AUTH_SERVER_PORT = 22222;
     private static final String CHAT_SERVER_HOST = "localhost";
@@ -130,16 +125,6 @@ public class SimpleAuthServer implements AuthServer {
             }
         }
         return null;
-    }
-
-    @Override
-    public boolean isUsernameExists(String username) {
-        return false;
-    }
-
-    @Override
-    public boolean isLoginExists(String login) {
-        return false;
     }
 
     @Override

@@ -1,6 +1,7 @@
 package ru.geekbrains.server.auth_server;
 
 import ru.geekbrains.chat_common.User;
+import ru.geekbrains.server.auth_server.db.DatabaseManager;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -23,14 +24,7 @@ public class AuthServerWithDB implements AuthServer {
     private boolean isConnectedToChatServer;
     private final Object mon1 = new Object();
 
-    private Connection dbConnection;
-    private PreparedStatement statement;
-    private final String selectUser = "SELECT * FROM users WHERE login = ? AND password = ?;";
-    private final String selectCheckUsername = "SELECT COUNT(*) FROM users WHERE username = ?;";
-    private final String selectCheckLogin = "SELECT COUNT(*) FROM users WHERE login = ?;";
-    private final String insertNewUser = "INSERT INTO users(username, login, password) VALUES (?, ?, ?);";
-    private boolean isConnectedTDB;
-    private final Object mon2 = new Object();
+    private final DatabaseManager dbManager;
 
     private final Set<AuthServerSessionHandler> activeSessions;
 
@@ -38,23 +32,22 @@ public class AuthServerWithDB implements AuthServer {
     public AuthServerWithDB() {
         activeSessions = new HashSet<>();
         isConnectedToChatServer = false;
-        isConnectedTDB = false;
-
+        dbManager = new DatabaseManager();
     }
 
     @Override
     public void start() {
         try (ServerSocket authServerSocket = new ServerSocket(AUTH_SERVER_PORT)) {
             System.out.println("Auth server started.");
-            connectionWithChatServerThread();
-            connectToDB();
+            chatServerConnectionThread();
+            dbManager.connectToDB();
             while (true) {
                 System.out.println("Waiting for connection...");
                 Socket socket = authServerSocket.accept();
                 System.out.println("Client connected (IP: " + socket.getInetAddress().getHostAddress() + ")");
-                new AuthServerSessionHandler(socket, this).handle();
+                new AuthServerSessionHandler(socket, this, dbManager).handle();
             }
-        } catch (IOException e) {
+        } catch (IOException | SQLException e) {
             e.printStackTrace();
         } finally {
             stop();
@@ -68,44 +61,16 @@ public class AuthServerWithDB implements AuthServer {
         }
         try {
             chatServerSocket.close();
-            dbConnection.close();
-        } catch (IOException | SQLException e) {/*do nothing*/}
+            dbManager.closeConnection();
+        } catch (IOException e) {/*do nothing*/}
         System.out.println("Auth server stopped.");
         System.exit(0);
     }
 
-    public synchronized void addSession(AuthServerSessionHandler session) {
-        activeSessions.add(session);
-        System.out.println("Session added");
-    }
-
-    public synchronized void removeSession(AuthServerSessionHandler session) {
-        activeSessions.remove(session);
-        System.out.println("Session removed");
-    }
-
-    private void connectionWithChatServerThread() {
+    private void chatServerConnectionThread() {
         Thread t = new Thread(this::connectToChatServer);
         t.setDaemon(true);
         t.start();
-    }
-
-    private void connectToDB() {
-        while (!isConnectedTDB) {
-            synchronized (mon2) {
-                try {
-                    System.out.println("Trying to connect with database...");
-                    dbConnection = DriverManager.getConnection("jdbc:sqlite:server/src/main/resources/java_chat.db");
-                    isConnectedTDB = true;
-                    System.out.println("Successfully connected to database.");
-                } catch (SQLException e) {
-                    try {
-                        System.out.println("Database not response.");
-                        mon2.wait(3000);
-                    } catch (InterruptedException interruptedException) {/*do nothing*/}
-                }
-            }
-        }
     }
 
     private void connectToChatServer() {
@@ -147,12 +112,24 @@ public class AuthServerWithDB implements AuthServer {
     }
 
     @Override
+    public synchronized boolean isConnectedToChatServer() {
+        return isConnectedToChatServer;
+    }
+
+    public synchronized void addSession(AuthServerSessionHandler session) {
+        activeSessions.add(session);
+        System.out.println("Session added");
+    }
+
+    public synchronized void removeSession(AuthServerSessionHandler session) {
+        activeSessions.remove(session);
+        System.out.println("Session removed");
+    }
+
+    @Override
     public synchronized User getUserByLoginAndPassword(String login, String password) {
         try {
-            statement = dbConnection.prepareStatement(selectUser);
-            statement.setString(1, login);
-            statement.setString(2, password);
-            ResultSet rs = statement.executeQuery();
+            ResultSet rs = dbManager.selectUserByLoginAndPassword(login, password);
             if (rs.next()) return new User(rs.getInt(1), rs.getString(2), rs.getString(3), rs.getString(4));
         } catch (SQLException e) {
             e.printStackTrace();
@@ -160,35 +137,4 @@ public class AuthServerWithDB implements AuthServer {
         return null;
     }
 
-    @Override
-    public synchronized boolean isUsernameExists(String username) throws SQLException {
-        statement = dbConnection.prepareStatement(selectCheckUsername);
-        statement.setString(1, username);
-        ResultSet rs = statement.executeQuery();
-        rs.next();
-        return rs.getInt(1) != 0;
-    }
-
-    @Override
-    public synchronized boolean isLoginExists(String login) throws SQLException {
-        statement = dbConnection.prepareStatement(selectCheckLogin);
-        statement.setString(1, login);
-        ResultSet rs = statement.executeQuery();
-        rs.next();
-        return rs.getInt(1) != 0;
-    }
-
-    @Override
-    public synchronized boolean createNewUser(String username, String login, String password) throws SQLException {
-        statement = dbConnection.prepareStatement(insertNewUser);
-        statement.setString(1, username);
-        statement.setString(2, login);
-        statement.setString(3, password);
-        return statement.executeUpdate() == 1;
-    }
-
-    @Override
-    public synchronized boolean isConnectedToChatServer() {
-        return isConnectedToChatServer;
-    }
 }

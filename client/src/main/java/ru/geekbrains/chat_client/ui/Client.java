@@ -6,6 +6,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -17,9 +18,6 @@ import java.io.IOException;
 public class Client extends Application {
     public static Stage authStage;
     public static Stage chatStage;
-    public static Scene loginScene;
-    public static Scene createUserScene;
-    public static Scene changePasswordScene;
 
     public static void main(String[] args) {
         launch(args);
@@ -48,40 +46,16 @@ public class Client extends Application {
         chatStage.show();
     }
 
-    public static void showLoginScene() throws IOException {
-        authStage.setScene(loginScene);
-    }
-
-    public static void showCreateUserScene() throws IOException {
-        authStage.setScene(createUserScene);
-    }
-
-    public static void showChangePasswordScene() throws IOException {
-        authStage.setScene(changePasswordScene);
-    }
-
     private static void createAuthStage(Stage stage) throws IOException {
         stage.initStyle(StageStyle.DECORATED);
         stage.setResizable(false);
         stage.setTitle("POGGERS chat");
         stage.getIcons().add(new Image("poggers_32x32.jpg"));
         stage.setOnCloseRequest(e -> System.exit(0));
-
-        //loginScene
-        FXMLLoader loader1 = new FXMLLoader();
-        loader1.setLocation(Client.class.getResource("/AuthWindow.fxml"));
-        loginScene = new Scene(loader1.load());
-        //createUserScene
-        FXMLLoader loader2 = new FXMLLoader();
-        loader2.setLocation(Client.class.getResource("/CreateUserWindow.fxml"));
-        createUserScene = new Scene(loader2.load());
-        //changePasswordScene
-        FXMLLoader loader3 = new FXMLLoader();
-        loader3.setLocation(Client.class.getResource("/ChangePasswordWindow.fxml"));
-        changePasswordScene = new Scene(loader3.load());
-
+        FXMLLoader loader = new FXMLLoader();
+        loader.setLocation(Client.class.getResource("/LoginWindow.fxml"));
+        stage.setScene(new Scene(loader.load()));
         authStage = stage;
-        showLoginScene();
     }
 
     private static void createChatStage(Stage stage) throws IOException {

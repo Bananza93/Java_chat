@@ -10,7 +10,4 @@ public interface AuthServer extends Server {
     void removeSession(AuthServerSessionHandler session);
     boolean isConnectedToChatServer();
     User getUserByLoginAndPassword(String login, String password);
-    boolean isUsernameExists(String username) throws SQLException;
-    boolean isLoginExists(String login) throws SQLException;
-    boolean createNewUser(String username, String login, String password) throws SQLException;
 }
