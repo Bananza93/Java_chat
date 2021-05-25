@@ -2,7 +2,6 @@ package ru.geekbrains.chat_client.network;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
 import ru.geekbrains.chat_client.ui.ClientController;
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.MessageType;

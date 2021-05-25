@@ -4,7 +4,6 @@ import ru.geekbrains.chat_common.User;
 import ru.geekbrains.server.auth_server.db.DatabaseManager;
 
 import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -20,7 +19,6 @@ public class AuthServerWithDB implements AuthServer {
 
     private Socket chatServerSocket;
     private DataInputStream fromChatServer;
-    private DataOutputStream toChatServer;
     private boolean isConnectedToChatServer;
     private final Object mon1 = new Object();
 
@@ -80,7 +78,6 @@ public class AuthServerWithDB implements AuthServer {
                     System.out.println("Trying to connect with chat server...");
                     chatServerSocket = new Socket(CHAT_SERVER_HOST, CHAT_SERVER_PORT);
                     fromChatServer = new DataInputStream(chatServerSocket.getInputStream());
-                    toChatServer = new DataOutputStream(chatServerSocket.getOutputStream());
                     isConnectedToChatServer = true;
                     System.out.println("Successfully connected.");
                 } catch (IOException e) {

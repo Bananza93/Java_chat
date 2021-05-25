@@ -96,7 +96,7 @@
                 <Insets top="25.0" />
             </VBox.margin>
         </Button>
-        <Button fx:id="authWindowChangePasswordButton" onAction="#showChangePasswordView" prefWidth="135.0" text="Change password">
+        <Button fx:id="authWindowChangePasswordButton" onAction="#showChangePasswordLoginView" prefWidth="135.0" text="Change password">
             <font>
                 <Font name="Arial" size="14.0" />
             </font>
@@ -221,6 +221,160 @@
             <Button fx:id="createUserBackButton" onAction="#showLoginView" prefWidth="70.0" text="Back">
                 <font>
                     <Font name="Arial" size="14.0" />
+                </font>
+            </Button>
+        </HBox>
+    </VBox>
+    <VBox fx:id="changePasswordLoginView" prefHeight="500.0" prefWidth="300.0" visible="false">
+        <Label text="Change password">
+            <font>
+                <Font name="Arial" size="22.0"/>
+            </font>
+            <VBox.margin>
+                <Insets bottom="7.0" left="20.0" top="7.0"/>
+            </VBox.margin>
+        </Label>
+        <Separator prefWidth="200.0">
+            <VBox.margin>
+                <Insets bottom="15.0"/>
+            </VBox.margin>
+        </Separator>
+        <Label text="Enter your login">
+            <VBox.margin>
+                <Insets bottom="3.0" left="20.0" top="130.0"/>
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+        </Label>
+        <TextField promptText="Login">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0"/>
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+        </TextField>
+        <Label textFill="RED" wrapText="true">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0"/>
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+        </Label>
+        <HBox alignment="CENTER" prefWidth="200.0" spacing="40.0">
+            <VBox.margin>
+                <Insets top="20.0"/>
+            </VBox.margin>
+            <Button onAction="#showChangePasswordPasswordView" prefWidth="70.0" text="Next">
+                <font>
+                    <Font name="Arial" size="14.0"/>
+                </font>
+            </Button>
+            <Button fx:id="changePasswordLoginBackButton" onAction="#showLoginView" prefWidth="70.0" text="Back">
+                <font>
+                    <Font name="Arial" size="14.0"/>
+                </font>
+            </Button>
+        </HBox>
+    </VBox>
+    <VBox fx:id="changePasswordPasswordView" prefHeight="500.0" prefWidth="300.0" visible="false">
+        <Label text="Change password">
+            <font>
+                <Font name="Arial" size="22.0"/>
+            </font>
+            <VBox.margin>
+                <Insets bottom="7.0" left="20.0" top="7.0"/>
+            </VBox.margin>
+        </Label>
+        <Separator prefWidth="200.0">
+            <VBox.margin>
+                <Insets bottom="15.0"/>
+            </VBox.margin>
+        </Separator>
+        <Label text="Enter current password">
+            <VBox.margin>
+                <Insets bottom="3.0" left="20.0" top="80.0"/>
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+        </Label>
+        <PasswordField promptText="Current password">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0"/>
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+        </PasswordField>
+        <Label textFill="RED" wrapText="true">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0"/>
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+        </Label>
+        <Label text="Enter new password">
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+            <VBox.margin>
+                <Insets bottom="3.0" left="20.0" top="5.0"/>
+            </VBox.margin>
+        </Label>
+        <PasswordField promptText="New password">
+            <VBox.margin>
+                <Insets left="20.0" right="20.0"/>
+            </VBox.margin>
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+        </PasswordField>
+        <Label textFill="RED" wrapText="true">
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+            <VBox.margin>
+                <Insets left="20.0" right="20.0"/>
+            </VBox.margin>
+        </Label>
+        <Label text="Confirm new password">
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+            <VBox.margin>
+                <Insets bottom="3.0" left="20.0" top="5.0"/>
+            </VBox.margin>
+        </Label>
+        <PasswordField promptText="Confirm new password">
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+            <VBox.margin>
+                <Insets left="20.0" right="20.0"/>
+            </VBox.margin>
+        </PasswordField>
+        <HBox alignment="CENTER" prefWidth="200.0" spacing="20.0">
+            <VBox.margin>
+                <Insets top="40.0"/>
+            </VBox.margin>
+            <Button prefWidth="70.0" text="Submit">
+                <font>
+                    <Font name="Arial" size="14.0"/>
+                </font>
+            </Button>
+            <Button prefWidth="70.0" text="Clear">
+                <font>
+                    <Font name="Arial" size="14.0"/>
+                </font>
+            </Button>
+            <Button fx:id="changePasswordPasswordBackButton" onAction="#showChangePasswordLoginView" prefWidth="70.0"
+                    text="Back">
+                <font>
+                    <Font name="Arial" size="14.0"/>
                 </font>
             </Button>
         </HBox>

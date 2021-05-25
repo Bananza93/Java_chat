@@ -16,8 +16,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import ru.geekbrains.chat_client.network.ClientSessionHandler;
 import ru.geekbrains.chat_client.network.MessageProcessor;
-import ru.geekbrains.chat_common.Message;
-import ru.geekbrains.chat_common.MessageType;
 import ru.geekbrains.chat_common.User;
 
 import java.awt.*;
@@ -87,6 +85,10 @@ public class ClientController implements Initializable {
     public TextArea userMessage;
     @FXML
     public Button sendButton;
+    public VBox changePasswordLoginView;
+    public Button changePasswordLoginBackButton;
+    public VBox changePasswordPasswordView;
+    public Button changePasswordPasswordBackButton;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -229,7 +231,7 @@ public class ClientController implements Initializable {
         authWindowPasswordField.requestFocus();
     }
 
-    public void showLoginView(ActionEvent actionEvent) throws IOException {
+    public void showLoginView(ActionEvent actionEvent) {
         if (actionEvent.getSource() instanceof Button) {
             switch (((Button) actionEvent.getSource()).getId()) {
                 case "createUserBackButton" -> {
@@ -241,13 +243,16 @@ public class ClientController implements Initializable {
         loginView.setVisible(true);
     }
 
-    public void showCreateUserView(ActionEvent actionEvent) throws IOException {
+    public void showCreateUserView(ActionEvent actionEvent) {
         clearTextInputs(authWindowPasswordField);
         loginView.setVisible(false);
         createUserView.setVisible(true);
     }
 
-    public void showChangePasswordView(ActionEvent actionEvent) throws IOException {
+    public void showChangePasswordLoginView(ActionEvent actionEvent) {
+    }
+
+    public void showChangePasswordPasswordView(ActionEvent actionEvent) {
     }
 
     public void createUserSubmitAction(ActionEvent actionEvent) {
@@ -291,7 +296,7 @@ public class ClientController implements Initializable {
     }
 
     public static void setCurrentSession(ClientSessionHandler sessionHandler) {
-        currentSession = null;
+        currentSession = sessionHandler;
     }
 
     public void createUserClearFormsAction(ActionEvent actionEvent) {
