@@ -28,7 +28,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ResourceBundle;
 
-public class ClientController implements Initializable {
+public class MainWindowsClientController implements Initializable {
     private static final String AUTH_SERVER_HOST = "localhost";
     private static final int AUTH_SERVER_PORT = 22222;
     private static final String CHAT_SERVER_HOST = "localhost";
@@ -131,7 +131,7 @@ public class ClientController implements Initializable {
             authWindowStateLabel.setText("Please enter login and password.");
             return;
         }
-        authWindowStateLabel.setText("");
+        clearErrorLabels(authWindowStateLabel);
         if (connectToAuthServer()) messageProcessor.sendAuthRequest(login, password);
     }
 
@@ -183,13 +183,6 @@ public class ClientController implements Initializable {
     public void openAboutWindow(ActionEvent actionEvent) throws IOException {
         Client.AboutWindow.display();
     }
-
-    public void closeAboutWindowByCloseButton(ActionEvent actionEvent) {
-        Node source = (Node) actionEvent.getSource();
-        Stage stage = (Stage) source.getScene().getWindow();
-        stage.close();
-    }
-
 
     public void loadChatWindow(User owner) throws IOException {
         connectToChatServer(owner);
@@ -294,7 +287,7 @@ public class ClientController implements Initializable {
         changePasswordPasswordView.setVisible(true);
     }
 
-    public void createUserSubmitAction(ActionEvent actionEvent) {
+    public void submitCreateUserRequest(ActionEvent actionEvent) {
         clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
         boolean isIncorrectInput = false;
         String username;
@@ -381,5 +374,9 @@ public class ClientController implements Initializable {
             changePasswordNewPasswordError.setText("Current and new passwords must be different!");
         }
         if (!isIncorrectInput && connectToAuthServer()) messageProcessor.sendChangePasswordRequest(login, currPassword, newPassword);
+    }
+
+    public void openChangeUsernameWindow(ActionEvent actionEvent) throws IOException {
+        Client.ChangeUsernameWindow.display();
     }
 }

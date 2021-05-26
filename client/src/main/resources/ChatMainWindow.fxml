@@ -6,7 +6,7 @@
 <?import javafx.scene.text.*?>
 
 <VBox prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
-      fx:controller="ru.geekbrains.chat_client.ui.ClientController">
+      fx:controller="ru.geekbrains.chat_client.ui.MainWindowsClientController">
     <MenuBar>
         <Menu text="Chat">
             <MenuItem onAction="#Dummy" text="Connect"/>
@@ -14,9 +14,7 @@
             <MenuItem onAction="#closeProgram" text="Exit"/>
         </Menu>
         <Menu text="Settings">
-            <MenuItem onAction="#Dummy" text="Settings1"/>
-            <MenuItem onAction="#Dummy" text="Settings2"/>
-            <MenuItem onAction="#Dummy" text="Settings3"/>
+            <MenuItem onAction="#openChangeUsernameWindow" text="Change username"/>
         </Menu>
         <Menu text="Help">
             <MenuItem onAction="#Dummy" text="Quick Guide"/>

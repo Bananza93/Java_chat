@@ -2,7 +2,7 @@ package ru.geekbrains.chat_client.network;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
-import ru.geekbrains.chat_client.ui.ClientController;
+import ru.geekbrains.chat_client.ui.MainWindowsClientController;
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.MessageType;
 import ru.geekbrains.chat_common.User;
@@ -12,10 +12,10 @@ import java.text.SimpleDateFormat;
 import java.util.Set;
 
 public class MessageProcessor {
-    private ClientController controller;
+    private MainWindowsClientController controller;
     private ClientSessionHandler currentSession;
 
-    public MessageProcessor(ClientController controller) {
+    public MessageProcessor(MainWindowsClientController controller) {
         this.controller = controller;
     }
 
@@ -27,7 +27,7 @@ public class MessageProcessor {
         this.currentSession = session;
     }
 
-    public void setController(ClientController controller) {
+    public void setController(MainWindowsClientController controller) {
         this.controller = controller;
     }
 

@@ -52,7 +52,7 @@ public class Client extends Application {
         stage.getIcons().add(new Image("poggers_32x32.jpg"));
         stage.setOnCloseRequest(e -> System.exit(0));
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(Client.class.getResource("/LoginWindow.fxml"));
+        loader.setLocation(Client.class.getResource("/LoginMainWindow.fxml"));
         stage.setScene(new Scene(loader.load()));
         authStage = stage;
     }
@@ -64,7 +64,7 @@ public class Client extends Application {
         stage.setTitle("POGGERS chat");
         stage.getIcons().add(new Image("poggers_32x32.jpg"));
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(Client.class.getResource("/ChatWindow.fxml"));
+        loader.setLocation(Client.class.getResource("/ChatMainWindow.fxml"));
         stage.setScene(new Scene(loader.load()));
         ListView<User> onlineUsers = (ListView<User>) stage.getScene().lookup("#onlineUsers");
         onlineUsers.setCellFactory(stringListView -> new ListCell<>() {
@@ -98,7 +98,31 @@ public class Client extends Application {
             window.setY((chatStage.getY() + (chatStage.getHeight() / 2)) - (window.getHeight() / 2));
 
             FXMLLoader loader = new FXMLLoader();
-            loader.setLocation(AboutWindow.class.getResource("/AboutWindow.fxml"));
+            loader.setLocation(AboutWindow.class.getResource("/AboutSubWindow.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            window.setScene(scene);
+            window.showAndWait();
+        }
+    }
+
+    static class ChangeUsernameWindow {
+
+        public static void display() throws IOException {
+            Stage window = new Stage();
+            window.initOwner(chatStage);
+            window.initModality(Modality.WINDOW_MODAL);
+            window.initStyle(StageStyle.UNIFIED);
+            window.setWidth(300.0);
+            window.setHeight(335.0);
+            window.setTitle("Change username");
+            window.getIcons().add(new Image("poggers_32x32.jpg"));
+            window.setResizable(false);
+            window.setX((chatStage.getX() + (chatStage.getWidth() / 2)) - (window.getWidth() / 2));
+            window.setY((chatStage.getY() + (chatStage.getHeight() / 2)) - (window.getHeight() / 2));
+
+            FXMLLoader loader = new FXMLLoader();
+            loader.setLocation(AboutWindow.class.getResource("/ChangeUsernameSubWindow.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
             window.setScene(scene);
