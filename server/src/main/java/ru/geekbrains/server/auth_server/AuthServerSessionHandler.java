@@ -10,6 +10,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.Objects;
@@ -75,16 +76,13 @@ public class AuthServerSessionHandler implements SessionHandler {
             while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String rawMessage = inputStream.readUTF();
                 Message message = Message.messageFromJson(rawMessage);
-                if (message.getMessageType() == MessageType.AUTH_REQUEST) {
-                    authenticateUser(message.getMessageBody());
-                } else if (message.getMessageType() == MessageType.CREATE_USER_REQUEST) {
-                    createUser(message.getMessageBody());
-                } else if (message.getMessageType() == MessageType.CHANGE_PASSWORD_REQUEST) {
-                    changeUserPassword(message.getMessageBody());
-                } else if (message.getMessageType() == MessageType.CHANGE_USERNAME_REQUEST) {
-                    changeUserUsername(message.getMessageBody());
-                } else {
-                    System.out.println("Incorrect message type: " + message.getMessageType());
+                switch (message.getMessageType()) {
+                    case AUTH_REQUEST -> authenticateUser(message.getMessageBody());
+                    case CREATE_USER_REQUEST -> createUser(message.getMessageBody());
+                    case CHANGE_PASSWORD_LOGIN_CHECK -> changeUserPasswordCheckLogin(message.getMessageBody());
+                    case CHANGE_PASSWORD_REQUEST -> changeUserPassword(message.getMessageBody());
+                    case CHANGE_USERNAME_REQUEST -> changeUserUsername(message.getMessageBody());
+                    default -> System.out.println("Incorrect message type: " + message.getMessageType());
                 }
             }
         } catch (IOException e) {
@@ -92,6 +90,22 @@ public class AuthServerSessionHandler implements SessionHandler {
         } finally {
             close();
         }
+    }
+
+    private void changeUserPasswordCheckLogin(String login) {
+        Message response = new Message();
+        try {
+            if (dbManager.isLoginExists(login)) {
+                response.setMessageType(MessageType.CHANGE_PASSWORD_LOGIN_EXISTS);
+            } else {
+                response.setMessageType(MessageType.CHANGE_PASSWORD_LOGIN_FAILURE);
+                response.setMessageBody("Login doesn't exists");
+            }
+        } catch (SQLException e) {
+            response.setMessageType(MessageType.CHANGE_PASSWORD_LOGIN_FAILURE);
+            response.setMessageBody("Service currently unavailable. Please try again later");
+        }
+        sendMessage(response);
     }
 
     private void sendMessage(Message message) {
@@ -106,16 +120,13 @@ public class AuthServerSessionHandler implements SessionHandler {
     private void createUser(String messageBody) {
         Message response = new Message();
         String[] userData = messageBody.split(":", 3); //username : login : password
-        boolean isUsernameExists;
-        boolean isLoginExists;
         try {
-            isUsernameExists = dbManager.isUsernameExists(userData[0]);
-            isLoginExists = dbManager.isLoginExists(userData[1]);
+            boolean isUsernameExists = dbManager.isUsernameExists(userData[0]);
+            boolean isLoginExists = dbManager.isLoginExists(userData[1]);
             if (!isUsernameExists && !isLoginExists) {
-                if (dbManager.createNewUser(userData[0], userData[1], userData[2])) {
+                if (dbManager.insertNewUser(userData[0], userData[1], userData[2])) {
                     response.setMessageType(MessageType.CREATE_USER_SUCCESS);
                     response.setMessageBody("User " + userData[0] + " (login: " + userData[1] + ") successfully created!");
-                    sendMessage(response);
                 } else {
                     throw new SQLException();
                 }
@@ -123,22 +134,39 @@ public class AuthServerSessionHandler implements SessionHandler {
                 if (isUsernameExists) {
                     response.setMessageType(MessageType.CREATE_USER_USERNAME_EXISTS);
                     response.setMessageBody("Username " + userData[0] + " is already in use");
-                    sendMessage(response);
                 }
                 if (isLoginExists) {
                     response.setMessageType(MessageType.CREATE_USER_LOGIN_EXISTS);
                     response.setMessageBody("Login " + userData[1] + " is already in use");
-                    sendMessage(response);
                 }
             }
         } catch (SQLException e) {
             response.setMessageType(MessageType.CREATE_USER_FAILURE);
-            response.setMessageBody("Service currently unavailable. Please try again later.");
-            sendMessage(response);
+            response.setMessageBody("Service currently unavailable. Please try again later");
         }
+        sendMessage(response);
     }
 
     private void changeUserPassword(String messageBody) {
+        Message response = new Message();
+        String[] userData = messageBody.split(":", 3); //login : currPassword : newPassword <- возможна ошибка с : в currPassword
+        try {
+            ResultSet user = dbManager.selectUserByLoginAndPassword(userData[0], userData[1]);
+            if (user.next()) {
+                if (dbManager.updateUserPassword(userData[0], userData[2])) {
+                    response.setMessageType(MessageType.CHANGE_PASSWORD_SUCCESS);
+                } else {
+                    throw new SQLException();
+                }
+            } else {
+                response.setMessageType(MessageType.CHANGE_PASSWORD_FAILURE);
+                response.setMessageBody("Incorrect current password");
+            }
+        } catch (SQLException e) {
+            response.setMessageType(MessageType.CHANGE_PASSWORD_FAILURE);
+            response.setMessageBody("Service currently unavailable. Please try again later");
+        }
+        sendMessage(response);
     }
 
     private void changeUserUsername(String messageBody) {
@@ -150,7 +178,7 @@ public class AuthServerSessionHandler implements SessionHandler {
             response.setMessageType(MessageType.AUTH_FAILURE);
             response.setMessageBody("Server under maintenance. Please try again later.");
         } else {
-            String[] userData = messageBody.split(":", 2);
+            String[] userData = messageBody.split(":", 2); //login : password
             User user = server.getUserByLoginAndPassword(userData[0], userData[1]);
             if (user == null) {
                 response.setMessageType(MessageType.AUTH_FAILURE);

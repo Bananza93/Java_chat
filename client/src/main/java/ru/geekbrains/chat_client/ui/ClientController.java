@@ -37,34 +37,28 @@ public class ClientController implements Initializable {
     private static ClientSessionHandler currentSession;
 
     //AuthWindow vars
-    //Login scene vars
-    @FXML
-    public VBox loginView;
-    @FXML
-    public TextField authWindowLoginField;
-    @FXML
-    public PasswordField authWindowPasswordField;
+    //Login view vars
     @FXML
     public Button authWindowLoginButton;
     @FXML
     public Button authWindowExitButton;
     @FXML
-    public Label authWindowStateLabel;
-    @FXML
     public Button authWindowSignupButton;
     @FXML
     public Button authWindowChangePasswordButton;
-    //CreateUser scene vars
     @FXML
-    public VBox createUserView;
+    public Label authWindowStateLabel;
     @FXML
-    public TextField createUserUsernameField;
+    public PasswordField authWindowPasswordField;
     @FXML
-    public TextField createUserLoginField;
+    public TextField authWindowLoginField;
     @FXML
-    public PasswordField createUserPasswordField;
+    public VBox loginView;
+    //CreateUser view vars
     @FXML
-    public PasswordField createUserConfirmPasswordField;
+    public Button createUserClearButton;
+    @FXML
+    public Button createUserBackButton;
     @FXML
     public Label createUserUsernameError;
     @FXML
@@ -72,9 +66,41 @@ public class ClientController implements Initializable {
     @FXML
     public Label createUserPasswordError;
     @FXML
-    public Button createUserClearButton;
+    public PasswordField createUserPasswordField;
     @FXML
-    public Button createUserBackButton;
+    public PasswordField createUserConfirmPasswordField;
+    @FXML
+    public TextField createUserUsernameField;
+    @FXML
+    public TextField createUserLoginField;
+    @FXML
+    public VBox createUserView;
+    //ChangePassword login view vars
+    @FXML
+    public Button changePasswordLoginBackButton;
+    @FXML
+    public Label changePasswordLoginErrorLabel;
+    @FXML
+    public TextField changePasswordLoginTextField;
+    @FXML
+    public VBox changePasswordLoginView;
+    //ChangePassword password view vars
+    @FXML
+    public Button changePasswordPasswordClearButton;
+    @FXML
+    public Button changePasswordPasswordBackButton;
+    @FXML
+    public Label changePasswordCurrentPasswordError;
+    @FXML
+    public Label changePasswordNewPasswordError;
+    @FXML
+    public PasswordField changePasswordCurrentPasswordField;
+    @FXML
+    public PasswordField changePasswordNewPasswordField;
+    @FXML
+    public PasswordField changePasswordConfirmNewPasswordField;
+    @FXML
+    public VBox changePasswordPasswordView;
 
     //ChatWindow vars
     @FXML
@@ -85,10 +111,6 @@ public class ClientController implements Initializable {
     public TextArea userMessage;
     @FXML
     public Button sendButton;
-    public VBox changePasswordLoginView;
-    public Button changePasswordLoginBackButton;
-    public VBox changePasswordPasswordView;
-    public Button changePasswordPasswordBackButton;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -179,19 +201,14 @@ public class ClientController implements Initializable {
     private boolean connectToAuthServer() {
         try {
             if (currentSession != null) {
-                System.out.println("in if 1");
                 if (!currentSession.getServerType().equals("AUTH")) {
-                    System.out.println("in if 2");
                     currentSession.close();
                 } else {
-                    System.out.println("in else");
                     return true;
                 }
             }
-            System.out.println("after if");
             currentSession = new ClientSessionHandler(new Socket(AUTH_SERVER_HOST, AUTH_SERVER_PORT), "AUTH", messageProcessor);
             currentSession.handle();
-            System.out.println("session created");
             return true;
         } catch (IOException e) {
             authWindowStateLabel.setText("Auth server unavailable.");
@@ -232,11 +249,17 @@ public class ClientController implements Initializable {
     }
 
     public void showLoginView(ActionEvent actionEvent) {
-        if (actionEvent.getSource() instanceof Button) {
-            switch (((Button) actionEvent.getSource()).getId()) {
+        Object source = actionEvent.getSource();
+        if (source instanceof Button) {
+            switch (((Button) source).getId()) {
                 case "createUserBackButton" -> {
                     createUserClearButton.fire();
                     createUserView.setVisible(false);
+                }
+                case "changePasswordLoginBackButton" -> {
+                    clearErrorLabels(changePasswordLoginErrorLabel);
+                    clearTextInputs(changePasswordLoginTextField);
+                    changePasswordLoginView.setVisible(false);
                 }
             }
         }
@@ -250,9 +273,25 @@ public class ClientController implements Initializable {
     }
 
     public void showChangePasswordLoginView(ActionEvent actionEvent) {
+        Object source = actionEvent.getSource();
+        if (source instanceof Button) {
+            switch (((Button) source).getId()) {
+                case "changePasswordPasswordBackButton" -> {
+                    changePasswordPasswordClearButton.fire();
+                    changePasswordPasswordView.setVisible(false);
+                }
+                case "authWindowChangePasswordButton" -> {
+                    clearTextInputs(authWindowPasswordField);
+                    loginView.setVisible(false);
+                }
+            }
+        }
+        changePasswordLoginView.setVisible(true);
     }
 
-    public void showChangePasswordPasswordView(ActionEvent actionEvent) {
+    public void showChangePasswordPasswordView() {
+        changePasswordLoginView.setVisible(false);
+        changePasswordPasswordView.setVisible(true);
     }
 
     public void createUserSubmitAction(ActionEvent actionEvent) {
@@ -300,7 +339,47 @@ public class ClientController implements Initializable {
     }
 
     public void createUserClearFormsAction(ActionEvent actionEvent) {
+
         clearTextInputs(createUserUsernameField, createUserLoginField, createUserPasswordField, createUserConfirmPasswordField);
         clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
+    }
+
+    public void changePasswordCheckIfLoginExists(ActionEvent actionEvent) {
+        clearErrorLabels(changePasswordLoginErrorLabel);
+        String login;
+        if ((login = changePasswordLoginTextField.getText()).isEmpty()) {
+            changePasswordLoginErrorLabel.setText("Enter your login");
+            return;
+        }
+        if (connectToAuthServer()) messageProcessor.sendChangePasswordLoginCheckRequest(login);
+    }
+
+    public void changePasswordPasswordClearForms(ActionEvent actionEvent) {
+        clearTextInputs(changePasswordCurrentPasswordField, changePasswordNewPasswordField, changePasswordConfirmNewPasswordField);
+        clearErrorLabels(changePasswordCurrentPasswordError, changePasswordNewPasswordError);
+    }
+
+    public void submitChangePasswordRequest(ActionEvent actionEvent) {
+        clearErrorLabels(changePasswordCurrentPasswordError, changePasswordNewPasswordError);
+        boolean isIncorrectInput = false;
+        String login = changePasswordLoginTextField.getText();
+        String currPassword;
+        String newPassword;
+        if ((currPassword = changePasswordCurrentPasswordField.getText()).isEmpty()) {
+            isIncorrectInput = true;
+            changePasswordCurrentPasswordError.setText("Enter your current password");
+        }
+        if ((newPassword = changePasswordNewPasswordField.getText()).isEmpty()) {
+            isIncorrectInput = true;
+            changePasswordNewPasswordError.setText("Enter your new password");
+        } else if (!newPassword.equals(changePasswordConfirmNewPasswordField.getText())) {
+            isIncorrectInput = true;
+            changePasswordNewPasswordError.setText("Passwords doesn't match!");
+        } else if (currPassword.equals(newPassword)) {
+            isIncorrectInput = true;
+            changePasswordCurrentPasswordError.setText("Current and new passwords must be different!");
+            changePasswordNewPasswordError.setText("Current and new passwords must be different!");
+        }
+        if (!isIncorrectInput && connectToAuthServer()) messageProcessor.sendChangePasswordRequest(login, currPassword, newPassword);
     }
 }

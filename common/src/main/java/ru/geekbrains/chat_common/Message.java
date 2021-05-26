@@ -16,6 +16,11 @@ public class Message {
     public Message() {
     }
 
+    public Message(MessageType type) {
+        this.messageType = type;
+        this.messageDate = new Date();
+    }
+
     public String messageToJson() {
         return new Gson().toJson(this);
     }

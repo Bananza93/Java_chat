@@ -247,7 +247,7 @@
                 <Font name="Arial" size="14.0"/>
             </font>
         </Label>
-        <TextField promptText="Login">
+        <TextField fx:id="changePasswordLoginTextField" promptText="Login">
             <VBox.margin>
                 <Insets left="20.0" right="20.0"/>
             </VBox.margin>
@@ -255,7 +255,7 @@
                 <Font name="Arial" size="14.0"/>
             </font>
         </TextField>
-        <Label textFill="RED" wrapText="true">
+        <Label fx:id="changePasswordLoginErrorLabel" textFill="RED" wrapText="true">
             <VBox.margin>
                 <Insets left="20.0" right="20.0"/>
             </VBox.margin>
@@ -267,7 +267,7 @@
             <VBox.margin>
                 <Insets top="20.0"/>
             </VBox.margin>
-            <Button onAction="#showChangePasswordPasswordView" prefWidth="70.0" text="Next">
+            <Button onAction="#changePasswordCheckIfLoginExists" prefWidth="70.0" text="Next">
                 <font>
                     <Font name="Arial" size="14.0"/>
                 </font>
@@ -301,7 +301,7 @@
                 <Font name="Arial" size="14.0"/>
             </font>
         </Label>
-        <PasswordField promptText="Current password">
+        <PasswordField fx:id="changePasswordCurrentPasswordField" promptText="Current password">
             <VBox.margin>
                 <Insets left="20.0" right="20.0"/>
             </VBox.margin>
@@ -309,7 +309,7 @@
                 <Font name="Arial" size="14.0"/>
             </font>
         </PasswordField>
-        <Label textFill="RED" wrapText="true">
+        <Label fx:id="changePasswordCurrentPasswordError" textFill="RED" wrapText="true">
             <VBox.margin>
                 <Insets left="20.0" right="20.0"/>
             </VBox.margin>
@@ -325,7 +325,7 @@
                 <Insets bottom="3.0" left="20.0" top="5.0"/>
             </VBox.margin>
         </Label>
-        <PasswordField promptText="New password">
+        <PasswordField fx:id="changePasswordNewPasswordField" promptText="New password">
             <VBox.margin>
                 <Insets left="20.0" right="20.0"/>
             </VBox.margin>
@@ -333,7 +333,7 @@
                 <Font name="Arial" size="14.0"/>
             </font>
         </PasswordField>
-        <Label textFill="RED" wrapText="true">
+        <Label fx:id="changePasswordNewPasswordError" textFill="RED" wrapText="true">
             <font>
                 <Font name="Arial" size="14.0"/>
             </font>
@@ -349,7 +349,7 @@
                 <Insets bottom="3.0" left="20.0" top="5.0"/>
             </VBox.margin>
         </Label>
-        <PasswordField promptText="Confirm new password">
+        <PasswordField fx:id="changePasswordConfirmNewPasswordField" promptText="Confirm new password">
             <font>
                 <Font name="Arial" size="14.0"/>
             </font>
@@ -361,12 +361,12 @@
             <VBox.margin>
                 <Insets top="40.0"/>
             </VBox.margin>
-            <Button prefWidth="70.0" text="Submit">
+            <Button onAction="#submitChangePasswordRequest" prefWidth="70.0" text="Submit">
                 <font>
                     <Font name="Arial" size="14.0"/>
                 </font>
             </Button>
-            <Button prefWidth="70.0" text="Clear">
+            <Button fx:id="changePasswordPasswordClearButton" onAction="#changePasswordPasswordClearForms" prefWidth="70.0" text="Clear">
                 <font>
                     <Font name="Arial" size="14.0"/>
                 </font>

@@ -74,10 +74,8 @@ public class ChatServer implements Server {
 
     public synchronized void sendOnlineUsersList() {
         HashSet<User> set = new HashSet<>(onlineUsers.keySet());
-        Message message = new Message();
-        message.setMessageType(MessageType.ONLINE_USERS_LIST);
+        Message message = new Message(MessageType.ONLINE_USERS_LIST);
         message.setOnlineUsersSet(set);
-        message.setMessageDate(new Date());
         String jsonMessage = message.messageToJson();
         for (ChatServerSessionHandler handler : onlineUsers.values()) {
             handler.sendMessage(jsonMessage);
