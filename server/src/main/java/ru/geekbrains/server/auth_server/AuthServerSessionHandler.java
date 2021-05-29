@@ -76,7 +76,6 @@ public class AuthServerSessionHandler implements SessionHandler {
             while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String rawMessage = inputStream.readUTF();
                 System.out.println("Message received: " + rawMessage);
-                //сделать продление/пересоздание TimeoutTask'a при получении проверочного сообщения от клиента (например, тип PREPARE_FOR_SENDING)
                 Message message = Message.messageFromJson(rawMessage);
                 switch (message.getMessageType()) {
                     case AUTH_REQUEST -> authenticateUser(message.getMessageBody());
