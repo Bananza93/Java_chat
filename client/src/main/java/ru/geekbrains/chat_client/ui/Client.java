@@ -83,7 +83,6 @@ public class Client extends Application {
     }
 
     static class AboutWindow {
-
         public static void display() throws IOException {
             Stage window = new Stage();
             window.initOwner(chatStage);
@@ -107,7 +106,6 @@ public class Client extends Application {
     }
 
     static class ChangeUsernameWindow {
-
         public static void display() throws IOException {
             Stage window = new Stage();
             window.initOwner(chatStage);

@@ -3,7 +3,6 @@ package ru.geekbrains.chat_client.ui;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -11,16 +10,12 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import ru.geekbrains.chat_client.network.ClientSessionHandler;
 import ru.geekbrains.chat_client.network.MessageProcessor;
 import ru.geekbrains.chat_common.User;
 
 import java.awt.*;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -29,12 +24,7 @@ import java.util.Date;
 import java.util.ResourceBundle;
 
 public class MainWindowsClientController implements Initializable {
-    private static final String AUTH_SERVER_HOST = "localhost";
-    private static final int AUTH_SERVER_PORT = 22222;
-    private static final String CHAT_SERVER_HOST = "localhost";
-    private static final int CHAT_SERVER_PORT = 11111;
     private static MessageProcessor messageProcessor;
-    private static ClientSessionHandler currentSession;
 
     //AuthWindow vars
     //Login view vars
@@ -115,130 +105,12 @@ public class MainWindowsClientController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         if (messageProcessor == null) {
-            messageProcessor = new MessageProcessor(this);
-        } else {
-            messageProcessor.setController(this);
+            messageProcessor = MessageProcessor.getInstance();
         }
+        messageProcessor.setMainWindowController(this);
     }
 
-    public void Dummy(ActionEvent actionEvent) {
-    }
-
-    public void sendAuthRequest(ActionEvent actionEvent) {
-        String login = authWindowLoginField.getText();
-        String password = authWindowPasswordField.getText();
-        if (login.isEmpty() || password.isEmpty()) {
-            authWindowStateLabel.setText("Please enter login and password.");
-            return;
-        }
-        clearErrorLabels(authWindowStateLabel);
-        if (connectToAuthServer()) messageProcessor.sendAuthRequest(login, password);
-    }
-
-    public void sendMessageBySendButton(ActionEvent actionEvent) {
-        sendMessage();
-    }
-
-    public void userMessageUtilityKeyHandler(KeyEvent keyEvent) {
-        if (keyEvent.getCode() == KeyCode.ENTER) {
-            if (keyEvent.isShiftDown()) {
-                userMessage.appendText("\n");
-            } else {
-                userMessage.setText(userMessage.getText().substring(0, userMessage.getText().length() - 1));
-                sendMessage();
-            }
-        }
-    }
-
-    public void sendMessage() {
-        String rawMessage = userMessage.getText();
-        if (rawMessage.length() == 0) return;
-        SimpleDateFormat pattern = new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss");
-        String prefix;
-        User toUser = onlineUsers.getSelectionModel().getSelectedItem();
-        if (toUser.getUsername().equals("PUBLIC")) {
-            messageProcessor.sendPublicMessage(rawMessage);
-            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME:\u00A0";
-        } else {
-            messageProcessor.sendPrivateMessage(rawMessage, toUser);
-            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME\u00A0->\u00A0" + toUser.getUsername() + ":\u00A0";
-        }
-        chatArea.appendText(prefix + rawMessage + System.lineSeparator());
-        userMessage.clear();
-    }
-
-    public void clearChat(ActionEvent actionEvent) {
-        chatArea.clear();
-    }
-
-    public void closeProgram(ActionEvent actionEvent) {
-        System.exit(0);
-    }
-
-    public void toGitHubPage(ActionEvent actionEvent) throws URISyntaxException, IOException {
-        Desktop desktop = Desktop.getDesktop();
-        desktop.browse(new URI("https://github.com/Bananza93/Java_chat"));
-    }
-
-    public void openAboutWindow(ActionEvent actionEvent) throws IOException {
-        Client.AboutWindow.display();
-    }
-
-    public void loadChatWindow(User owner) throws IOException {
-        connectToChatServer(owner);
-        Client.showChatStage();
-        Client.chatStage.setTitle(Client.chatStage.getTitle() + " [User: " + owner.getUsername() + "]");
-        messageProcessor.sendSubscribeRequest(owner);
-    }
-
-    private boolean connectToAuthServer() {
-        try {
-            if (currentSession != null) {
-                if (!currentSession.getServerType().equals("AUTH")) {
-                    currentSession.close();
-                } else {
-                    return true;
-                }
-            }
-            currentSession = new ClientSessionHandler(new Socket(AUTH_SERVER_HOST, AUTH_SERVER_PORT), "AUTH", messageProcessor);
-            currentSession.handle();
-            return true;
-        } catch (IOException e) {
-            authWindowStateLabel.setText("Auth server unavailable.");
-        }
-        return false;
-    }
-
-    private boolean connectToChatServer(User owner) {
-        try {
-            if (currentSession != null) {
-                if (!currentSession.getServerType().equals("CHAT")) {
-                    currentSession.close();
-                } else {
-                    return true;
-                }
-            }
-            currentSession = new ClientSessionHandler(new Socket(CHAT_SERVER_HOST, CHAT_SERVER_PORT), "CHAT", messageProcessor, owner);
-            currentSession.handle();
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return false;
-    }
-
-    public void loginByEnter(KeyEvent keyEvent) {
-        if (keyEvent.getCode() == KeyCode.ENTER) {
-            authWindowLoginButton.fire();
-        }
-    }
-
-    public void focusToLoginField(MouseEvent mouseEvent) {
-        authWindowLoginField.requestFocus();
-    }
-
-    public void focusToPasswordField(MouseEvent mouseEvent) {
-        authWindowPasswordField.requestFocus();
+    public void Dummy() {
     }
 
     public void showLoginView(ActionEvent actionEvent) {
@@ -259,7 +131,7 @@ public class MainWindowsClientController implements Initializable {
         loginView.setVisible(true);
     }
 
-    public void showCreateUserView(ActionEvent actionEvent) {
+    public void showCreateUserView() {
         clearTextInputs(authWindowPasswordField);
         loginView.setVisible(false);
         createUserView.setVisible(true);
@@ -287,7 +159,30 @@ public class MainWindowsClientController implements Initializable {
         changePasswordPasswordView.setVisible(true);
     }
 
-    public void submitCreateUserRequest(ActionEvent actionEvent) {
+    public void showChatWindow() throws IOException {
+        Client.showChatStage();
+    }
+
+    public void openAboutWindow() throws IOException {
+        Client.AboutWindow.display();
+    }
+
+    public void openChangeUsernameWindow() throws IOException {
+        Client.ChangeUsernameWindow.display();
+    }
+
+    public void sendAuthRequest() {
+        String login = authWindowLoginField.getText();
+        String password = authWindowPasswordField.getText();
+        if (login.isEmpty() || password.isEmpty()) {
+            authWindowStateLabel.setText("Please enter login and password.");
+            return;
+        }
+        clearErrorLabels(authWindowStateLabel);
+        messageProcessor.sendAuthRequest(login, password);
+    }
+
+    public void submitCreateUserRequest() {
         clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
         boolean isIncorrectInput = false;
         String username;
@@ -308,51 +203,20 @@ public class MainWindowsClientController implements Initializable {
             isIncorrectInput = true;
             createUserPasswordError.setText("Passwords doesn't match!");
         }
-        if (!isIncorrectInput && connectToAuthServer()) messageProcessor.sendCreateUserRequest(username, login, password);
+        if (!isIncorrectInput) messageProcessor.sendCreateUserRequest(username, login, password);
     }
 
-    private void clearErrorLabels(Label... labels) {
-        for (Label label : labels) {
-            label.setText("");
-        }
-    }
-
-    private void clearTextInputs(TextInputControl... textInputElement) {
-        for (TextInputControl textInputControl : textInputElement) {
-            textInputControl.clear();
-        }
-    }
-
-    public static ClientSessionHandler getCurrentSession() {
-        return currentSession;
-    }
-
-    public static void setCurrentSession(ClientSessionHandler sessionHandler) {
-        currentSession = sessionHandler;
-    }
-
-    public void createUserClearFormsAction(ActionEvent actionEvent) {
-
-        clearTextInputs(createUserUsernameField, createUserLoginField, createUserPasswordField, createUserConfirmPasswordField);
-        clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
-    }
-
-    public void changePasswordCheckIfLoginExists(ActionEvent actionEvent) {
+    public void changePasswordCheckIfLoginExists() {
         clearErrorLabels(changePasswordLoginErrorLabel);
         String login;
         if ((login = changePasswordLoginTextField.getText()).isEmpty()) {
             changePasswordLoginErrorLabel.setText("Enter your login");
             return;
         }
-        if (connectToAuthServer()) messageProcessor.sendChangePasswordLoginCheckRequest(login);
+        messageProcessor.sendChangePasswordLoginCheckRequest(login);
     }
 
-    public void changePasswordPasswordClearForms(ActionEvent actionEvent) {
-        clearTextInputs(changePasswordCurrentPasswordField, changePasswordNewPasswordField, changePasswordConfirmNewPasswordField);
-        clearErrorLabels(changePasswordCurrentPasswordError, changePasswordNewPasswordError);
-    }
-
-    public void submitChangePasswordRequest(ActionEvent actionEvent) {
+    public void submitChangePasswordRequest() {
         clearErrorLabels(changePasswordCurrentPasswordError, changePasswordNewPasswordError);
         boolean isIncorrectInput = false;
         String login = changePasswordLoginTextField.getText();
@@ -373,10 +237,88 @@ public class MainWindowsClientController implements Initializable {
             changePasswordCurrentPasswordError.setText("Current and new passwords must be different!");
             changePasswordNewPasswordError.setText("Current and new passwords must be different!");
         }
-        if (!isIncorrectInput && connectToAuthServer()) messageProcessor.sendChangePasswordRequest(login, currPassword, newPassword);
+        if (!isIncorrectInput) messageProcessor.sendChangePasswordRequest(login, currPassword, newPassword);
     }
 
-    public void openChangeUsernameWindow(ActionEvent actionEvent) throws IOException {
-        Client.ChangeUsernameWindow.display();
+    public void sendMessage() {
+        String rawMessage = userMessage.getText();
+        if (rawMessage.length() == 0) return;
+        SimpleDateFormat pattern = new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss");
+        String prefix;
+        User toUser = onlineUsers.getSelectionModel().getSelectedItem();
+        if (toUser.getUsername().equals("PUBLIC")) {
+            messageProcessor.sendPublicMessage(rawMessage);
+            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME:\u00A0";
+        } else {
+            messageProcessor.sendPrivateMessage(rawMessage, toUser);
+            prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME\u00A0->\u00A0" + toUser.getUsername() + ":\u00A0";
+        }
+        chatArea.appendText(prefix + rawMessage + System.lineSeparator());
+        userMessage.clear();
+    }
+
+    public void userMessageUtilityKeyHandler(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.ENTER) {
+            if (keyEvent.isShiftDown()) {
+                userMessage.appendText("\n");
+            } else {
+                userMessage.setText(userMessage.getText().substring(0, userMessage.getText().length() - 1));
+                sendMessage();
+            }
+        }
+    }
+
+    public void sendMessageBySendButton() {
+        sendMessage();
+    }
+
+    public void clearChat() {
+        chatArea.clear();
+    }
+
+    public void closeProgram() {
+        System.exit(0);
+    }
+
+    public void toGitHubPage() throws URISyntaxException, IOException {
+        Desktop desktop = Desktop.getDesktop();
+        desktop.browse(new URI("https://github.com/Bananza93/Java_chat"));
+    }
+
+    public void loginByEnter(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.ENTER) {
+            authWindowLoginButton.fire();
+        }
+    }
+
+    public void focusToLoginField() {
+        authWindowLoginField.requestFocus();
+    }
+
+    public void focusToPasswordField() {
+        authWindowPasswordField.requestFocus();
+    }
+
+    public void createUserClearFormsAction() {
+
+        clearTextInputs(createUserUsernameField, createUserLoginField, createUserPasswordField, createUserConfirmPasswordField);
+        clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
+    }
+
+    public void changePasswordPasswordClearForms() {
+        clearTextInputs(changePasswordCurrentPasswordField, changePasswordNewPasswordField, changePasswordConfirmNewPasswordField);
+        clearErrorLabels(changePasswordCurrentPasswordError, changePasswordNewPasswordError);
+    }
+
+    private void clearErrorLabels(Label... labels) {
+        for (Label label : labels) {
+            label.setText("");
+        }
+    }
+
+    private void clearTextInputs(TextInputControl... textInputElement) {
+        for (TextInputControl textInputControl : textInputElement) {
+            textInputControl.clear();
+        }
     }
 }

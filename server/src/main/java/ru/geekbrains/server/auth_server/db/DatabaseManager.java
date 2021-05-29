@@ -3,7 +3,6 @@ package ru.geekbrains.server.auth_server.db;
 import java.sql.*;
 
 public class DatabaseManager {
-
     private Connection dbConnection;
     private PreparedStatement statement;
 
