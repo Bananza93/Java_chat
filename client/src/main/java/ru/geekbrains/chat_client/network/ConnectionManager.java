@@ -1,5 +1,6 @@
 package ru.geekbrains.chat_client.network;
 
+import ru.geekbrains.chat_client.utils.MessageHistory;
 import ru.geekbrains.chat_client.ui.Client;
 import ru.geekbrains.chat_common.User;
 
@@ -65,6 +66,7 @@ public class ConnectionManager {
 
     public static void setCurrentUser(User user) {
         ConnectionManager.currentUser = user;
-        Client.chatStage.setTitle(Client.chatStage.getTitle() + " [User: " + currentUser.getUsername() + "]");
+        MessageHistory.setCurrentUser(currentUser);
+        Client.chatStage.setTitle("POGGERS chat [User: " + currentUser.getUsername() + "]");
     }
 }

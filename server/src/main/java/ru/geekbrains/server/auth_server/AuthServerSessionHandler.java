@@ -176,6 +176,29 @@ public class AuthServerSessionHandler implements SessionHandler {
     }
 
     private void changeUserUsername(String messageBody) {
+        Message response = new Message();
+        String[] userData = messageBody.split(":", 3); //login : newUsername : currPassword
+        try {
+            User user = server.getUserByLoginAndPassword(userData[0], userData[2]);
+            if (user != null) {
+                if (dbManager.isUsernameExists(userData[1])) {
+                    response.setMessageType(MessageType.CHANGE_USERNAME_FAILURE);
+                    response.setMessageBody("Username " + userData[1] + " is already in use ");
+                } else {
+                    dbManager.updateUserUsername(userData[0], userData[1]);
+                    user.setUsername(userData[1]);
+                    response.setMessageType(MessageType.CHANGE_USERNAME_SUCCESS);
+                    response.setToUser(user);
+                }
+            } else {
+                response.setMessageType(MessageType.CHANGE_USERNAME_INCORRECT_PASSWORD);
+                response.setMessageBody("Incorrect current password");
+            }
+        } catch (SQLException e) {
+            response.setMessageType(MessageType.CHANGE_USERNAME_FAILURE);
+            response.setMessageBody("Service currently unavailable. Please try again later");
+        }
+        sendMessage(response);
     }
 
     private void authenticateUser(String messageBody) {

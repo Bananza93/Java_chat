@@ -46,21 +46,25 @@ public class ChatServer implements Server {
 
     public synchronized void subscribeUser(User user, ChatServerSessionHandler sessionHandler) {
         ChatServerSessionHandler handler = onlineUsers.get(user);
-        if (sessionHandler.equals(handler)) return;
-        if (handler != null) unsubscribeUser(user);
+        if (handler != null) {
+            unsubscribeUser(user, !handler.equals(sessionHandler));
+        }
         onlineUsers.put(user, sessionHandler);
         sessionHandler.setSessionUser(user);
         System.out.println("User " + user.getUsername() + " subscribed.");
         sendOnlineUsersList();
     }
 
-    public synchronized void unsubscribeUser(User user) {
+    public synchronized void unsubscribeUser(User user, boolean closeExistSession) {
         ChatServerSessionHandler handler = onlineUsers.remove(user);
-        if (handler != null) handler.close();
+        if (handler != null && closeExistSession) handler.close();
         System.out.println("User " + user.getUsername() + " unsubscribed.");
         sendOnlineUsersList();
     }
 
+    public synchronized void unsubscribeUser(User user) {
+        unsubscribeUser(user, true);
+    }
 
     public synchronized void sendPrivateMessage(String message, User toUser) {
         onlineUsers.get(toUser).sendMessage(message);
@@ -80,5 +84,9 @@ public class ChatServer implements Server {
         for (ChatServerSessionHandler handler : onlineUsers.values()) {
             handler.sendMessage(jsonMessage);
         }
+    }
+
+    public synchronized ChatServerSessionHandler getUsersHandler(User user) {
+        return onlineUsers.get(user);
     }
 }

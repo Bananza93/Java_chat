@@ -58,4 +58,12 @@ public class DatabaseManager {
         statement.setString(2, login);
         return statement.executeUpdate() == 1;
     }
+
+    public synchronized boolean updateUserUsername(String login, String newUsername) throws SQLException {
+        String updateUserPasswordQuery = "UPDATE users SET username = ? WHERE login = ?;";
+        statement = dbConnection.prepareStatement(updateUserPasswordQuery);
+        statement.setString(1, newUsername);
+        statement.setString(2, login);
+        return statement.executeUpdate() == 1;
+    }
 }

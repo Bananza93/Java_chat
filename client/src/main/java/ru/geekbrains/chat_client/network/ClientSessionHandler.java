@@ -1,5 +1,6 @@
 package ru.geekbrains.chat_client.network;
 
+import ru.geekbrains.chat_client.utils.MessageHistory;
 import ru.geekbrains.chat_common.SessionHandler;
 
 import java.io.DataInputStream;
@@ -40,6 +41,7 @@ public class ClientSessionHandler implements SessionHandler {
                     + socket.getLocalAddress() + ":" + socket.getPort()
                     + ") closed at " + new Date());
             isClosed = true;
+            MessageHistory.close();
             socket.close();
             sessionThread.interrupt();
         } catch (IOException e) {/*do nothing*/}

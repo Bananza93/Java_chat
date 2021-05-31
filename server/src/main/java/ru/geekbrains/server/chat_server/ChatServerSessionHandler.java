@@ -63,7 +63,7 @@ public class ChatServerSessionHandler implements SessionHandler {
         } catch (IOException e) {
             System.out.println("Handler closed at " + System.currentTimeMillis());
         } finally {
-            server.unsubscribeUser(sessionUser);
+            if (server.getUsersHandler(sessionUser).equals(this)) server.unsubscribeUser(sessionUser);
         }
     }
 
