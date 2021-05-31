@@ -1,5 +1,6 @@
 package ru.geekbrains.chat_client.network;
 
+import ru.geekbrains.chat_client.ui.MainWindowsClientController;
 import ru.geekbrains.chat_common.SessionHandler;
 import ru.geekbrains.chat_common.User;
 
@@ -46,6 +47,9 @@ public class ClientSessionHandler implements SessionHandler {
         try {
             if (messageProcessor.getCurrentSession().getServerType().equals(this.serverType)) {
                 messageProcessor.setCurrentSession(null);
+            }
+            if (MainWindowsClientController.getCurrentSession().getServerType().equals(this.serverType)) {
+                MainWindowsClientController.setCurrentSession(null);
             }
             socket.close();
             sessionThread.interrupt();

@@ -8,7 +8,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="ru.geekbrains.chat_client.ui.ClientController">
+            fx:controller="ru.geekbrains.chat_client.ui.SubWindowsClientController">
     <top>
         <HBox BorderPane.alignment="CENTER">
             <ImageView>

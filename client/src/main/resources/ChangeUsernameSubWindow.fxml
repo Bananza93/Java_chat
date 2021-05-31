@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox prefHeight="300.0" prefWidth="300.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="ru.geekbrains.chat_client.ui.SubWindowsClientController">
+    <Label text="Change username">
+        <font>
+            <Font name="Arial" size="22.0"/>
+        </font>
+        <VBox.margin>
+            <Insets bottom="7.0" left="20.0" top="7.0"/>
+        </VBox.margin>
+    </Label>
+    <Separator>
+        <VBox.margin>
+            <Insets bottom="15.0"/>
+        </VBox.margin>
+    </Separator>
+    <Label text="Enter new username">
+        <font>
+            <Font name="Arial" size="14.0"/>
+        </font>
+        <VBox.margin>
+            <Insets bottom="3.0" left="20.0" top="10.0"/>
+        </VBox.margin>
+    </Label>
+    <TextField fx:id="changeUsernameUsernameField" promptText="New username">
+        <font>
+            <Font name="Arial" size="14.0"/>
+        </font>
+        <VBox.margin>
+            <Insets left="20.0" right="20.0"/>
+        </VBox.margin>
+    </TextField>
+    <Label fx:id="changeUsernameUsernameError" textFill="RED" wrapText="true">
+        <font>
+            <Font name="Arial" size="14.0"/>
+        </font>
+        <VBox.margin>
+            <Insets left="20.0" right="20.0"/>
+        </VBox.margin>
+    </Label>
+    <Label text="Enter your password">
+        <font>
+            <Font name="Arial" size="14.0"/>
+        </font>
+        <VBox.margin>
+            <Insets bottom="3.0" left="20.0" top="5.0"/>
+        </VBox.margin>
+    </Label>
+    <PasswordField fx:id="changeUsernamePasswordField" promptText="Password">
+        <font>
+            <Font name="Arial" size="14.0"/>
+        </font>
+        <VBox.margin>
+            <Insets left="20.0" right="20.0"/>
+        </VBox.margin>
+    </PasswordField>
+    <Label fx:id="changeUsernamePasswordError" textFill="RED" wrapText="true">
+        <font>
+            <Font name="Arial" size="14.0"/>
+        </font>
+        <VBox.margin>
+            <Insets left="20.0" right="20.0"/>
+        </VBox.margin>
+    </Label>
+    <HBox alignment="CENTER" prefWidth="200.0" spacing="40.0">
+        <VBox.margin>
+            <Insets top="20.0"/>
+        </VBox.margin>
+        <Button onAction="#submitChangeUsernameRequest" prefWidth="70.0" text="Submit">
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+        </Button>
+        <Button fx:id="changeUsernameCancelButton" onAction="#closeChangeUsernameByCancelButton" prefWidth="70.0" text="Cancel">
+            <font>
+                <Font name="Arial" size="14.0"/>
+            </font>
+        </Button>
+    </HBox>
+</VBox>
