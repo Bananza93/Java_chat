@@ -75,6 +75,7 @@ public class AuthServerSessionHandler implements SessionHandler {
         try {
             while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String rawMessage = inputStream.readUTF();
+                System.out.println("Message received: " + rawMessage);
                 Message message = Message.messageFromJson(rawMessage);
                 switch (message.getMessageType()) {
                     case AUTH_REQUEST -> authenticateUser(message.getMessageBody());
@@ -111,7 +112,9 @@ public class AuthServerSessionHandler implements SessionHandler {
     private void sendMessage(Message message) {
         try {
             message.setMessageDate(new Date());
-            outputStream.writeUTF(message.messageToJson());
+            String jsonMessage = message.messageToJson();
+            System.out.println("Message send: " + jsonMessage);
+            outputStream.writeUTF(jsonMessage);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -127,6 +130,7 @@ public class AuthServerSessionHandler implements SessionHandler {
                 if (dbManager.insertNewUser(userData[0], userData[1], userData[2])) {
                     response.setMessageType(MessageType.CREATE_USER_SUCCESS);
                     response.setMessageBody("User " + userData[0] + " (login: " + userData[1] + ") successfully created!");
+                    sendMessage(response);
                 } else {
                     throw new SQLException();
                 }
@@ -134,17 +138,19 @@ public class AuthServerSessionHandler implements SessionHandler {
                 if (isUsernameExists) {
                     response.setMessageType(MessageType.CREATE_USER_USERNAME_EXISTS);
                     response.setMessageBody("Username " + userData[0] + " is already in use");
+                    sendMessage(response);
                 }
                 if (isLoginExists) {
                     response.setMessageType(MessageType.CREATE_USER_LOGIN_EXISTS);
                     response.setMessageBody("Login " + userData[1] + " is already in use");
+                    sendMessage(response);
                 }
             }
         } catch (SQLException e) {
             response.setMessageType(MessageType.CREATE_USER_FAILURE);
             response.setMessageBody("Service currently unavailable. Please try again later");
+            sendMessage(response);
         }
-        sendMessage(response);
     }
 
     private void changeUserPassword(String messageBody) {

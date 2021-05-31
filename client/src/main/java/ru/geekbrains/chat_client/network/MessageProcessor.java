@@ -3,6 +3,7 @@ package ru.geekbrains.chat_client.network;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import ru.geekbrains.chat_client.ui.MainWindowsClientController;
+import ru.geekbrains.chat_client.ui.SubWindowsClientController;
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.MessageType;
 import ru.geekbrains.chat_common.User;
@@ -12,23 +13,25 @@ import java.text.SimpleDateFormat;
 import java.util.Set;
 
 public class MessageProcessor {
-    private MainWindowsClientController controller;
-    private ClientSessionHandler currentSession;
+    private static final MessageProcessor instance = new MessageProcessor();
+    private static final User PUBLIC_TECH_USER = new User("PUBLIC", "", "");
+    private final Object mon1 = new Object();
+    private MainWindowsClientController mainWindowController;
+    private SubWindowsClientController subWindowController;
 
-    public MessageProcessor(MainWindowsClientController controller) {
-        this.controller = controller;
+    private MessageProcessor() {
     }
 
-    public ClientSessionHandler getCurrentSession() {
-        return currentSession;
+    public static MessageProcessor getInstance() {
+        return instance;
     }
 
-    public void setCurrentSession(ClientSessionHandler session) {
-        this.currentSession = session;
+    public void setMainWindowController(MainWindowsClientController mainWindowController) {
+        this.mainWindowController = mainWindowController;
     }
 
-    public void setController(MainWindowsClientController controller) {
-        this.controller = controller;
+    public void setSubWindowController(SubWindowsClientController subWindowController) {
+        this.subWindowController = subWindowController;
     }
 
     public synchronized void incomingMessage(String jsonMessage) throws IOException {
@@ -36,64 +39,74 @@ public class MessageProcessor {
         Message message = Message.messageFromJson(jsonMessage);
         switch (message.getMessageType()) {
             case AUTH_FAILURE -> Platform.runLater(() -> {
-                controller.authWindowPasswordField.clear();
-                controller.authWindowStateLabel.setText(message.getMessageBody());
+                mainWindowController.authWindowPasswordField.clear();
+                mainWindowController.authWindowStateLabel.setText(message.getMessageBody());
             });
             case AUTH_SUCCESS -> Platform.runLater(() -> {
                 try {
-                    controller.loadChatWindow(message.getToUser());
+                    mainWindowController.showChatWindow();
+                    ConnectionManager.setCurrentUser(message.getToUser());
+                    ConnectionManager.getCurrentChatServerSession();
+                    sendSubscribeRequest(ConnectionManager.getCurrentUser());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             });
             case PUBLIC -> {
-                if (message.getFromUser().getUsername().equals(currentSession.getSessionOwner().getUsername())) return;
+                if (message.getFromUser().getUsername().equals(ConnectionManager.getCurrentUser().getUsername()))
+                    return;
                 Platform.runLater(() -> {
                     String msg = "[" + new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss").format(message.getMessageDate())
                             + "]\u00A0" + message.getFromUser().getUsername()
                             + ":\u00A0" + message.getMessageBody()
                             + System.lineSeparator();
-                    controller.chatArea.appendText(msg);
+                    mainWindowController.chatArea.appendText(msg);
                 });
             }
-            case ONLINE_USERS_LIST -> Platform.runLater(() -> {
-                Set<User> users = message.getOnlineUsersSet();
-                users.remove(currentSession.getSessionOwner());
-                controller.onlineUsers.setItems(FXCollections.observableArrayList(users));
-                controller.onlineUsers.getItems().add(0, new User("PUBLIC", "", ""));
-                controller.onlineUsers.getSelectionModel().selectFirst();
-            });
             case PRIVATE -> Platform.runLater(() -> {
                 String msg = "[" + new SimpleDateFormat("dd/MM/yy\u00A0HH:mm:ss").format(message.getMessageDate())
                         + "]\u00A0" + message.getFromUser().getUsername()
                         + "\u00A0->\u00A0ME:\u00A0" + message.getMessageBody()
                         + System.lineSeparator();
-                controller.chatArea.appendText(msg);
+                mainWindowController.chatArea.appendText(msg);
             });
-            case CREATE_USER_USERNAME_EXISTS -> Platform.runLater(() -> controller.createUserUsernameError.setText(message.getMessageBody()));
-            case CREATE_USER_LOGIN_EXISTS -> Platform.runLater(() -> controller.createUserLoginError.setText(message.getMessageBody()));
-            case CREATE_USER_SUCCESS -> Platform.runLater(() -> controller.createUserBackButton.fire());
-            case CHANGE_PASSWORD_LOGIN_FAILURE -> Platform.runLater(() -> controller.changePasswordLoginErrorLabel.setText(message.getMessageBody()));
-            case CHANGE_PASSWORD_LOGIN_EXISTS -> Platform.runLater(() -> controller.showChangePasswordPasswordView());
+            case ONLINE_USERS_LIST -> Platform.runLater(() -> {
+                Set<User> users = message.getOnlineUsersSet();
+                users.remove(ConnectionManager.getCurrentUser());
+                mainWindowController.onlineUsers.setItems(FXCollections.observableArrayList(users));
+                mainWindowController.onlineUsers.getItems().add(0, PUBLIC_TECH_USER);
+                mainWindowController.onlineUsers.getSelectionModel().selectFirst();
+            });
+            case CREATE_USER_USERNAME_EXISTS -> Platform.runLater(() -> mainWindowController.createUserUsernameError.setText(message.getMessageBody()));
+            case CREATE_USER_LOGIN_EXISTS -> Platform.runLater(() -> mainWindowController.createUserLoginError.setText(message.getMessageBody()));
+            case CREATE_USER_SUCCESS -> Platform.runLater(() -> mainWindowController.createUserBackButton.fire());
+            case CHANGE_PASSWORD_LOGIN_FAILURE -> Platform.runLater(() -> mainWindowController.changePasswordLoginErrorLabel.setText(message.getMessageBody()));
+            case CHANGE_PASSWORD_LOGIN_EXISTS -> Platform.runLater(() -> mainWindowController.showChangePasswordPasswordView());
             case CHANGE_PASSWORD_SUCCESS -> Platform.runLater(() -> {
-                controller.changePasswordPasswordBackButton.fire();
-                controller.changePasswordLoginBackButton.fire();
+                mainWindowController.changePasswordPasswordBackButton.fire();
+                mainWindowController.changePasswordLoginBackButton.fire();
             });
-            case CHANGE_PASSWORD_FAILURE -> Platform.runLater(() -> controller.changePasswordCurrentPasswordError.setText(message.getMessageBody()));
+            case CHANGE_PASSWORD_FAILURE -> Platform.runLater(() -> mainWindowController.changePasswordCurrentPasswordError.setText(message.getMessageBody()));
         }
     }
 
-    public synchronized void outgoingMessage(String jsonMessage) {
-        System.out.println("Message send: " + jsonMessage);
-        currentSession.sendMessage(jsonMessage);
+    public void outgoingMessage(String jsonMessage, ClientSessionHandler session) {
+        synchronized (mon1) {
+            System.out.println("Message send: " + jsonMessage);
+            session.sendMessage(jsonMessage);
+        }
     }
 
     public void sendPublicMessage(String rawMessage) {
         new Thread(() -> {
             Message message = new Message(MessageType.PUBLIC);
             message.setMessageBody(rawMessage.trim());
-            message.setFromUser(currentSession.getSessionOwner());
-            outgoingMessage(message.messageToJson());
+            message.setFromUser(ConnectionManager.getCurrentUser());
+            try {
+                outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentChatServerSession());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -101,9 +114,13 @@ public class MessageProcessor {
         new Thread(() -> {
             Message message = new Message(MessageType.PRIVATE);
             message.setMessageBody(rawMessage.trim());
-            message.setFromUser(currentSession.getSessionOwner());
+            message.setFromUser(ConnectionManager.getCurrentUser());
             message.setToUser(toUser);
-            outgoingMessage(message.messageToJson());
+            try {
+                outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentChatServerSession());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -111,7 +128,11 @@ public class MessageProcessor {
         new Thread(() -> {
             Message message = new Message(MessageType.SUBSCRIBE_REQUEST);
             message.setFromUser(user);
-            outgoingMessage(message.messageToJson());
+            try {
+                outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentChatServerSession());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -119,7 +140,11 @@ public class MessageProcessor {
         new Thread(() -> {
             Message message = new Message(MessageType.AUTH_REQUEST);
             message.setMessageBody(login + ":" + password);
-            outgoingMessage(message.messageToJson());
+            try {
+                outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
+            } catch (IOException e) {
+                mainWindowController.authWindowStateLabel.setText("Auth server unavailable.");
+            }
         }).start();
     }
 
@@ -127,7 +152,11 @@ public class MessageProcessor {
         new Thread(() -> {
             Message message = new Message(MessageType.CREATE_USER_REQUEST);
             message.setMessageBody(username + ":" + login + ":" + password);
-            outgoingMessage(message.messageToJson());
+            try {
+                outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -135,7 +164,11 @@ public class MessageProcessor {
         new Thread(() -> {
             Message message = new Message(MessageType.CHANGE_PASSWORD_LOGIN_CHECK);
             message.setMessageBody(login);
-            outgoingMessage(message.messageToJson());
+            try {
+                outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 
@@ -143,7 +176,11 @@ public class MessageProcessor {
         new Thread(() -> {
             Message message = new Message(MessageType.CHANGE_PASSWORD_REQUEST);
             message.setMessageBody(login + ":" + currPassword + ":" + newPassword);
-            outgoingMessage(message.messageToJson());
+            try {
+                outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }).start();
     }
 }

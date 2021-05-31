@@ -1,71 +1,58 @@
 package ru.geekbrains.chat_client.network;
 
-import ru.geekbrains.chat_client.ui.MainWindowsClientController;
 import ru.geekbrains.chat_common.SessionHandler;
-import ru.geekbrains.chat_common.User;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Date;
 
 public class ClientSessionHandler implements SessionHandler {
-    private MessageProcessor messageProcessor;
-    private String serverType;
-    private Socket socket;
-    private DataInputStream inputStream;
-    private DataOutputStream outputStream;
+    private static MessageProcessor messageProcessor;
+    private final Socket socket;
+    private final DataInputStream inputStream;
+    private final DataOutputStream outputStream;
     private Thread sessionThread;
-    private User sessionOwner;
+    private boolean isClosed;
 
-    public ClientSessionHandler(Socket socket, String serverType, MessageProcessor messageProcessor) {
+    public ClientSessionHandler(Socket socket) throws IOException {
         try {
-            this.messageProcessor = messageProcessor;
-            this.serverType = serverType;
+            if (messageProcessor == null) messageProcessor = MessageProcessor.getInstance();
             this.socket = socket;
             inputStream = new DataInputStream(socket.getInputStream());
             outputStream = new DataOutputStream(socket.getOutputStream());
-            System.out.println("Handler created (" + serverType + "_SERVER).");
+            isClosed = false;
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new IOException(e);
         }
-    }
-
-    public ClientSessionHandler(Socket socket, String serverType, MessageProcessor messageProcessor, User sessionOwner) {
-        this(socket, serverType, messageProcessor);
-        this.sessionOwner = sessionOwner;
     }
 
     @Override
     public void handle() {
-        messageProcessor.setCurrentSession(this);
         (sessionThread = new Thread(this::readMessage)).start();
     }
 
     @Override
     public void close() {
         try {
-            if (messageProcessor.getCurrentSession().getServerType().equals(this.serverType)) {
-                messageProcessor.setCurrentSession(null);
-            }
-            if (MainWindowsClientController.getCurrentSession().getServerType().equals(this.serverType)) {
-                MainWindowsClientController.setCurrentSession(null);
-            }
+            System.out.println("Connection with ("
+                    + socket.getLocalAddress() + ":" + socket.getPort()
+                    + ") closed at " + new Date());
+            isClosed = true;
             socket.close();
             sessionThread.interrupt();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) {/*do nothing*/}
     }
 
     private void readMessage() {
         try {
-            while(!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
+            while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String message = inputStream.readUTF();
                 messageProcessor.incomingMessage(message);
             }
         } catch (IOException e) {
-            System.out.println("Socket closed by server (" + serverType + "_SERVER) at " + System.currentTimeMillis());
+            /*do nothing*/
         } finally {
             close();
         }
@@ -79,11 +66,7 @@ public class ClientSessionHandler implements SessionHandler {
         }
     }
 
-    public String getServerType() {
-        return serverType;
-    }
-
-    public User getSessionOwner() {
-        return sessionOwner;
+    public boolean isClosed() {
+        return isClosed;
     }
 }
