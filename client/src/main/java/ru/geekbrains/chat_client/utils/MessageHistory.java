@@ -3,13 +3,12 @@ package ru.geekbrains.chat_client.utils;
 import ru.geekbrains.chat_common.User;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MessageHistory {
-    private static final String HIST_DIR = Paths.get("").toAbsolutePath() + "\\client\\src\\main\\java\\ru\\geekbrains\\chat_client\\history\\";
+    private static final String HIST_DIR = System.getenv("LOCALAPPDATA") + "\\POGGERS chat\\history\\";
     private static final int RETRIEVED_SIZE = 100;
     private static File history;
     private static User currentUser;
