@@ -9,22 +9,22 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
-import ru.geekbrains.chat_client.network.ClientSessionHandler;
+import ru.geekbrains.chat_client.network.ConnectionManager;
 import ru.geekbrains.chat_client.network.MessageProcessor;
+import ru.geekbrains.chat_client.utils.NodeUtils;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class SubWindowsClientController implements Initializable {
     private static MessageProcessor messageProcessor;
-    private static ClientSessionHandler currentSession;
 
     @FXML
     public Button changeUsernameCancelButton;
     @FXML
-    public Label changeUsernamePasswordError;
-    @FXML
     public Label changeUsernameUsernameError;
+    @FXML
+    public Label changeUsernamePasswordError;
     @FXML
     public PasswordField changeUsernamePasswordField;
     @FXML
@@ -50,14 +50,20 @@ public class SubWindowsClientController implements Initializable {
         stage.close();
     }
 
-    public void submitChangeUsernameRequest(ActionEvent actionEvent) {
+    public void submitChangeUsernameRequest() {
+        NodeUtils.clearErrorLabels(changeUsernameUsernameError, changeUsernamePasswordError);
+        boolean isIncorrectInput = false;
+        String newUsername;
+        String password;
+        if ((newUsername = changeUsernameUsernameField.getText()).isEmpty()) {
+            isIncorrectInput = true;
+            changeUsernameUsernameError.setText("Enter new username");
+        }
+        if ((password = changeUsernamePasswordField.getText()).isEmpty()) {
+            isIncorrectInput = true;
+            changeUsernamePasswordError.setText("Enter your password");
+        }
+        if (!isIncorrectInput) messageProcessor.sendChangeUsernameRequest(ConnectionManager.getCurrentUser().getLogin(), newUsername, password);
     }
 
-    public static ClientSessionHandler getCurrentSession() {
-        return currentSession;
-    }
-
-    public static void setCurrentSession(ClientSessionHandler sessionHandler) {
-        currentSession = sessionHandler;
-    }
 }

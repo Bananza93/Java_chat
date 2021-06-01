@@ -213,7 +213,7 @@
                     <Font name="Arial" size="14.0" />
                 </font>
             </Button>
-            <Button fx:id="createUserClearButton" onAction="#createUserClearFormsAction" prefWidth="70.0" text="Clear">
+            <Button fx:id="createUserClearButton" onAction="#createUserClearForms" prefWidth="70.0" text="Clear">
                 <font>
                     <Font name="Arial" size="14.0" />
                 </font>

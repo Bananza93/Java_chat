@@ -2,6 +2,7 @@ package ru.geekbrains.chat_client.network;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import ru.geekbrains.chat_client.utils.MessageHistory;
 import ru.geekbrains.chat_client.ui.MainWindowsClientController;
 import ru.geekbrains.chat_client.ui.SubWindowsClientController;
 import ru.geekbrains.chat_common.Message;
@@ -46,6 +47,7 @@ public class MessageProcessor {
                 try {
                     mainWindowController.showChatWindow();
                     ConnectionManager.setCurrentUser(message.getToUser());
+                    for (String msg : MessageHistory.readFromHistory()) mainWindowController.chatArea.appendText(msg + System.lineSeparator());
                     ConnectionManager.getCurrentChatServerSession();
                     sendSubscribeRequest(ConnectionManager.getCurrentUser());
                 } catch (IOException e) {
@@ -61,6 +63,7 @@ public class MessageProcessor {
                             + ":\u00A0" + message.getMessageBody()
                             + System.lineSeparator();
                     mainWindowController.chatArea.appendText(msg);
+                    MessageHistory.writeToHistory(msg);
                 });
             }
             case PRIVATE -> Platform.runLater(() -> {
@@ -69,6 +72,7 @@ public class MessageProcessor {
                         + "\u00A0->\u00A0ME:\u00A0" + message.getMessageBody()
                         + System.lineSeparator();
                 mainWindowController.chatArea.appendText(msg);
+                MessageHistory.writeToHistory(msg);
             });
             case ONLINE_USERS_LIST -> Platform.runLater(() -> {
                 Set<User> users = message.getOnlineUsersSet();
@@ -87,6 +91,13 @@ public class MessageProcessor {
                 mainWindowController.changePasswordLoginBackButton.fire();
             });
             case CHANGE_PASSWORD_FAILURE -> Platform.runLater(() -> mainWindowController.changePasswordCurrentPasswordError.setText(message.getMessageBody()));
+            case CHANGE_USERNAME_INCORRECT_PASSWORD -> Platform.runLater(() -> subWindowController.changeUsernamePasswordError.setText(message.getMessageBody()));
+            case CHANGE_USERNAME_FAILURE -> Platform.runLater(() -> subWindowController.changeUsernameUsernameError.setText(message.getMessageBody()));
+            case CHANGE_USERNAME_SUCCESS -> Platform.runLater(() -> {
+                ConnectionManager.setCurrentUser(message.getToUser());
+                sendSubscribeRequest(ConnectionManager.getCurrentUser());
+                subWindowController.changeUsernameCancelButton.fire();
+            });
         }
     }
 
@@ -143,7 +154,7 @@ public class MessageProcessor {
             try {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
             } catch (IOException e) {
-                mainWindowController.authWindowStateLabel.setText("Auth server unavailable.");
+                //mainWindowController.authWindowStateLabel.setText("Auth server unavailable.");
             }
         }).start();
     }
@@ -176,6 +187,18 @@ public class MessageProcessor {
         new Thread(() -> {
             Message message = new Message(MessageType.CHANGE_PASSWORD_REQUEST);
             message.setMessageBody(login + ":" + currPassword + ":" + newPassword);
+            try {
+                outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+    }
+
+    public void sendChangeUsernameRequest(String login, String newUsername, String password) {
+        new Thread(() -> {
+            Message message = new Message(MessageType.CHANGE_USERNAME_REQUEST);
+            message.setMessageBody(login + ":" + newUsername + ":" + password);
             try {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
             } catch (IOException e) {

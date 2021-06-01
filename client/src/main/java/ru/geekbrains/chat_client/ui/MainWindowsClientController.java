@@ -11,7 +11,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
+import ru.geekbrains.chat_client.utils.MessageHistory;
 import ru.geekbrains.chat_client.network.MessageProcessor;
+import ru.geekbrains.chat_client.utils.NodeUtils;
 import ru.geekbrains.chat_common.User;
 
 import java.awt.*;
@@ -122,8 +124,8 @@ public class MainWindowsClientController implements Initializable {
                     createUserView.setVisible(false);
                 }
                 case "changePasswordLoginBackButton" -> {
-                    clearErrorLabels(changePasswordLoginErrorLabel);
-                    clearTextInputs(changePasswordLoginTextField);
+                    NodeUtils.clearErrorLabels(changePasswordLoginErrorLabel);
+                    NodeUtils.clearTextInputs(changePasswordLoginTextField);
                     changePasswordLoginView.setVisible(false);
                 }
             }
@@ -132,7 +134,7 @@ public class MainWindowsClientController implements Initializable {
     }
 
     public void showCreateUserView() {
-        clearTextInputs(authWindowPasswordField);
+        NodeUtils.clearTextInputs(authWindowPasswordField);
         loginView.setVisible(false);
         createUserView.setVisible(true);
     }
@@ -146,7 +148,7 @@ public class MainWindowsClientController implements Initializable {
                     changePasswordPasswordView.setVisible(false);
                 }
                 case "authWindowChangePasswordButton" -> {
-                    clearTextInputs(authWindowPasswordField);
+                    NodeUtils.clearTextInputs(authWindowPasswordField);
                     loginView.setVisible(false);
                 }
             }
@@ -178,12 +180,12 @@ public class MainWindowsClientController implements Initializable {
             authWindowStateLabel.setText("Please enter login and password.");
             return;
         }
-        clearErrorLabels(authWindowStateLabel);
+        NodeUtils.clearErrorLabels(authWindowStateLabel);
         messageProcessor.sendAuthRequest(login, password);
     }
 
     public void submitCreateUserRequest() {
-        clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
+        NodeUtils.clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
         boolean isIncorrectInput = false;
         String username;
         String login;
@@ -207,7 +209,7 @@ public class MainWindowsClientController implements Initializable {
     }
 
     public void changePasswordCheckIfLoginExists() {
-        clearErrorLabels(changePasswordLoginErrorLabel);
+        NodeUtils.clearErrorLabels(changePasswordLoginErrorLabel);
         String login;
         if ((login = changePasswordLoginTextField.getText()).isEmpty()) {
             changePasswordLoginErrorLabel.setText("Enter your login");
@@ -217,7 +219,7 @@ public class MainWindowsClientController implements Initializable {
     }
 
     public void submitChangePasswordRequest() {
-        clearErrorLabels(changePasswordCurrentPasswordError, changePasswordNewPasswordError);
+        NodeUtils.clearErrorLabels(changePasswordCurrentPasswordError, changePasswordNewPasswordError);
         boolean isIncorrectInput = false;
         String login = changePasswordLoginTextField.getText();
         String currPassword;
@@ -253,8 +255,10 @@ public class MainWindowsClientController implements Initializable {
             messageProcessor.sendPrivateMessage(rawMessage, toUser);
             prefix = "[" + pattern.format(new Date()) + "]" + "\u00A0ME\u00A0->\u00A0" + toUser.getUsername() + ":\u00A0";
         }
-        chatArea.appendText(prefix + rawMessage + System.lineSeparator());
+        String message = prefix + rawMessage + System.lineSeparator();
+        chatArea.appendText(message);
         userMessage.clear();
+        MessageHistory.writeToHistory(message);
     }
 
     public void userMessageUtilityKeyHandler(KeyEvent keyEvent) {
@@ -299,26 +303,13 @@ public class MainWindowsClientController implements Initializable {
         authWindowPasswordField.requestFocus();
     }
 
-    public void createUserClearFormsAction() {
-
-        clearTextInputs(createUserUsernameField, createUserLoginField, createUserPasswordField, createUserConfirmPasswordField);
-        clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
+    public void createUserClearForms() {
+        NodeUtils.clearTextInputs(createUserUsernameField, createUserLoginField, createUserPasswordField, createUserConfirmPasswordField);
+        NodeUtils.clearErrorLabels(createUserUsernameError, createUserLoginError, createUserPasswordError);
     }
 
     public void changePasswordPasswordClearForms() {
-        clearTextInputs(changePasswordCurrentPasswordField, changePasswordNewPasswordField, changePasswordConfirmNewPasswordField);
-        clearErrorLabels(changePasswordCurrentPasswordError, changePasswordNewPasswordError);
-    }
-
-    private void clearErrorLabels(Label... labels) {
-        for (Label label : labels) {
-            label.setText("");
-        }
-    }
-
-    private void clearTextInputs(TextInputControl... textInputElement) {
-        for (TextInputControl textInputControl : textInputElement) {
-            textInputControl.clear();
-        }
+        NodeUtils.clearTextInputs(changePasswordCurrentPasswordField, changePasswordNewPasswordField, changePasswordConfirmNewPasswordField);
+        NodeUtils.clearErrorLabels(changePasswordCurrentPasswordError, changePasswordNewPasswordError);
     }
 }
