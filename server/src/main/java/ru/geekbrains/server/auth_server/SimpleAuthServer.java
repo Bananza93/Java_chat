@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
 
 public class SimpleAuthServer implements AuthServer {
 
@@ -130,5 +131,10 @@ public class SimpleAuthServer implements AuthServer {
     @Override
     public boolean isConnectedToChatServer() {
         return isConnectedToChatServer;
+    }
+
+    @Override
+    public ExecutorService getExecutorService() {
+        return null;
     }
 }

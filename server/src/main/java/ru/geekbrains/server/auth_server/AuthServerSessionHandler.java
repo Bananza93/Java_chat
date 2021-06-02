@@ -18,7 +18,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class AuthServerSessionHandler implements SessionHandler {
-    private Thread sessionThread;
     private Timer timeoutTimer;
     private Socket socket;
     private AuthServer server;
@@ -47,18 +46,15 @@ public class AuthServerSessionHandler implements SessionHandler {
     public void handle() {
         server.addSession(this);
         createTimeoutTask();
-        (sessionThread = new Thread(this::readMessage)).start();
+        server.getExecutorService().execute(this::readMessage);
     }
 
     @Override
     public void close() {
         try {
-            if (!socket.isClosed() || !sessionThread.isInterrupted()) {
-                timeoutTimer.cancel();
-                server.removeSession(this);
-                socket.close();
-                sessionThread.interrupt();
-            }
+            timeoutTimer.cancel();
+            server.removeSession(this);
+            socket.close();
         } catch (IOException e) {/*do nothing*/}
     }
 

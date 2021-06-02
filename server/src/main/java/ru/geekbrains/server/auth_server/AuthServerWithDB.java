@@ -10,6 +10,8 @@ import java.net.Socket;
 import java.sql.*;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class AuthServerWithDB implements AuthServer {
 
@@ -25,12 +27,13 @@ public class AuthServerWithDB implements AuthServer {
     private final DatabaseManager dbManager;
 
     private final Set<AuthServerSessionHandler> activeSessions;
-
+    private final ExecutorService executorService;
 
     public AuthServerWithDB() {
         activeSessions = new HashSet<>();
         isConnectedToChatServer = false;
         dbManager = new DatabaseManager();
+        executorService = Executors.newCachedThreadPool();
     }
 
     @Override
@@ -54,9 +57,7 @@ public class AuthServerWithDB implements AuthServer {
 
     @Override
     public void stop() {
-        for (AuthServerSessionHandler activeSession : activeSessions) {
-            activeSession.close();
-        }
+        executorService.shutdownNow();
         try {
             chatServerSocket.close();
             dbManager.closeConnection();
@@ -134,4 +135,8 @@ public class AuthServerWithDB implements AuthServer {
         return null;
     }
 
+    @Override
+    public ExecutorService getExecutorService() {
+        return executorService;
+    }
 }
