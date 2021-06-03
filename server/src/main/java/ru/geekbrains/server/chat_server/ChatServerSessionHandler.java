@@ -11,13 +11,11 @@ import java.net.Socket;
 import java.util.Objects;
 
 public class ChatServerSessionHandler implements SessionHandler {
-    private Thread sessionThread;
     private Socket socket;
     private ChatServer server;
     private DataInputStream inputStream;
     private DataOutputStream outputStream;
     private User sessionUser;
-
 
     public ChatServerSessionHandler(Socket socket, ChatServer chatServer) {
         try {
@@ -33,7 +31,7 @@ public class ChatServerSessionHandler implements SessionHandler {
 
     @Override
     public void handle() {
-        (sessionThread = new Thread(this::readMessage)).start();
+        server.getExecutorService().execute(this::readMessage);
     }
 
     @Override
@@ -41,7 +39,6 @@ public class ChatServerSessionHandler implements SessionHandler {
         try {
             System.out.println("Close session invoked");
             socket.close();
-            sessionThread.interrupt();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -63,7 +60,7 @@ public class ChatServerSessionHandler implements SessionHandler {
         } catch (IOException e) {
             System.out.println("Handler closed at " + System.currentTimeMillis());
         } finally {
-            if (server.getUsersHandler(sessionUser).equals(this)) server.unsubscribeUser(sessionUser);
+            if (sessionUser != null && server.getUsersHandler(sessionUser).equals(this)) server.unsubscribeUser(sessionUser);
         }
     }
 
@@ -73,10 +70,6 @@ public class ChatServerSessionHandler implements SessionHandler {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public User getSessionUser() {
-        return sessionUser;
     }
 
     public void setSessionUser(User sessionUser) {

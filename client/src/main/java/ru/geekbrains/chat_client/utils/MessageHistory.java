@@ -3,7 +3,6 @@ package ru.geekbrains.chat_client.utils;
 import ru.geekbrains.chat_common.User;
 
 import java.io.*;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;

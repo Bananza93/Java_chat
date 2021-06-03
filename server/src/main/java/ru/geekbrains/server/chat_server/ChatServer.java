@@ -9,13 +9,17 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ChatServer implements Server {
     private static final int PORT = 11111;
     private final Map<User, ChatServerSessionHandler> onlineUsers;
+    private final ExecutorService executorService;
 
     public ChatServer() {
         onlineUsers = new HashMap<>();
+        executorService = Executors.newCachedThreadPool();
     }
 
     @Override
@@ -37,9 +41,7 @@ public class ChatServer implements Server {
 
     @Override
     public void stop() {
-        for (ChatServerSessionHandler serverSessionHandler : onlineUsers.values()) {
-            serverSessionHandler.close();
-        }
+        executorService.shutdownNow();
         System.out.println("Chat server stopped.");
         System.exit(0);
     }
@@ -88,5 +90,9 @@ public class ChatServer implements Server {
 
     public synchronized ChatServerSessionHandler getUsersHandler(User user) {
         return onlineUsers.get(user);
+    }
+
+    public ExecutorService getExecutorService() {
+        return executorService;
     }
 }
