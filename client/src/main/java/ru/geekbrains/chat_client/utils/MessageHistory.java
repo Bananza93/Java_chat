@@ -15,14 +15,13 @@ public class MessageHistory {
     private static final int RETRIEVED_SIZE = 100;
     private static File history;
     private static User currentUser;
-    private static BufferedWriter br;
 
     private MessageHistory() {}
 
     public static void writeToHistory(String message) {
-        try {
-            br.write(message);
-            br.flush();
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(history, true))){
+            bw.write(message);
+            bw.flush();
         } catch (IOException e) {
             LOGGER.debug("EXCEPTION!", e);
         }
@@ -51,19 +50,6 @@ public class MessageHistory {
         history = new File( HIST_DIR + currentUser.getLogin() + ".hist");
         if (!history.exists()) {
             new File(HIST_DIR).mkdirs();
-        }
-        try {
-            br = new BufferedWriter(new FileWriter(history, true));
-        } catch (IOException e) {
-            LOGGER.debug("EXCEPTION!", e);
-        }
-    }
-
-    public static void close() {
-        if (br != null) {
-            try {
-                br.close();
-            } catch (IOException e) {/*do nothing*/}
         }
     }
 }

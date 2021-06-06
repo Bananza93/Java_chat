@@ -43,7 +43,6 @@ public class ClientSessionHandler implements SessionHandler {
                     + socket.getLocalAddress() + ":" + socket.getPort()
                     + ") closed");
             isClosed = true;
-            MessageHistory.close();
             socket.close();
             sessionThread.interrupt();
         } catch (IOException e) {/*do nothing*/}
