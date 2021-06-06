@@ -1,9 +1,11 @@
-package ru.geekbrains.server.chat_server;
+package ru.geekbrains.chat_server.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.MessageType;
 import ru.geekbrains.chat_common.User;
-import ru.geekbrains.server.utils.Server;
+import ru.geekbrains.chat_server.utils.Server;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -13,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ChatServer implements Server {
+    private static final Logger LOGGER = LogManager.getLogger(ChatServer.class);
     private static final int PORT = 11111;
     private final Map<User, ChatServerSessionHandler> onlineUsers;
     private final ExecutorService executorService;
@@ -25,15 +28,14 @@ public class ChatServer implements Server {
     @Override
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            System.out.println("Chat server started.");
+            LOGGER.info("Chat server started.");
             while (true) {
-                System.out.println("Waiting for connection...");
                 Socket socket = serverSocket.accept();
-                System.out.println("Client connected (IP: " + socket.getInetAddress().getHostAddress() + ")");
+                LOGGER.info("Client connected (IP: " + socket.getInetAddress().getHostAddress() + ")");
                 new ChatServerSessionHandler(socket, this).handle();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error(e.getStackTrace());
         } finally {
             stop();
         }
@@ -42,7 +44,7 @@ public class ChatServer implements Server {
     @Override
     public void stop() {
         executorService.shutdownNow();
-        System.out.println("Chat server stopped.");
+        LOGGER.warn("Chat server stopped.");
         System.exit(0);
     }
 
@@ -53,14 +55,14 @@ public class ChatServer implements Server {
         }
         onlineUsers.put(user, sessionHandler);
         sessionHandler.setSessionUser(user);
-        System.out.println("User " + user.getUsername() + " subscribed.");
+        LOGGER.info("User " + user.getUsername() + " subscribed.");
         sendOnlineUsersList();
     }
 
     public synchronized void unsubscribeUser(User user, boolean closeExistSession) {
         ChatServerSessionHandler handler = onlineUsers.remove(user);
         if (handler != null && closeExistSession) handler.close();
-        System.out.println("User " + user.getUsername() + " unsubscribed.");
+        LOGGER.info("User " + user.getUsername() + " unsubscribed.");
         sendOnlineUsersList();
     }
 

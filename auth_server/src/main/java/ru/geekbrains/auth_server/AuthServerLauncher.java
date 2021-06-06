@@ -1,6 +1,6 @@
-package ru.geekbrains.server;
+package ru.geekbrains.auth_server;
 
-import ru.geekbrains.server.auth_server.AuthServerWithDB;
+import ru.geekbrains.auth_server.server.AuthServerWithDB;
 
 public class AuthServerLauncher {
     public static void main(String[] args) {

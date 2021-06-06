@@ -1,15 +1,20 @@
-package ru.geekbrains.server.auth_server.db;
+package ru.geekbrains.auth_server.db;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import ru.geekbrains.auth_server.server.AuthServerWithDB;
 
 import java.sql.*;
 
 public class DatabaseManager {
+    private static final Logger LOGGER = LogManager.getLogger(AuthServerWithDB.class);
     private Connection dbConnection;
     private PreparedStatement statement;
 
     public void connectToDB() throws SQLException {
-        System.out.println("Trying to connect with database...");
-        dbConnection = DriverManager.getConnection("jdbc:sqlite:server/src/main/java/ru/geekbrains/server/auth_server/db/java_chat.db");
-        System.out.println("Successfully connected to database.");
+        LOGGER.info("Trying to connect with database...");
+        dbConnection = DriverManager.getConnection("jdbc:sqlite:auth_server/src/main/java/ru/geekbrains/auth_server/db/java_chat.db");
+        LOGGER.info("Successfully connected to database");
     }
 
     public void closeConnection() {
