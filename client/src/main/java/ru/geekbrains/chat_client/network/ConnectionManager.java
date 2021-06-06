@@ -1,14 +1,16 @@
 package ru.geekbrains.chat_client.network;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.geekbrains.chat_client.utils.MessageHistory;
 import ru.geekbrains.chat_client.ui.Client;
 import ru.geekbrains.chat_common.User;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Date;
 
 public class ConnectionManager {
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private static final String AUTH_SERVER_HOST = "localhost";
     private static final int AUTH_SERVER_PORT = 22222;
     private static final String CHAT_SERVER_HOST = "localhost";
@@ -51,13 +53,13 @@ public class ConnectionManager {
     private static void connectToAuthServer() throws IOException {
         currentAuthServerSession = new ClientSessionHandler(new Socket(AUTH_SERVER_HOST, AUTH_SERVER_PORT));
         currentAuthServerSession.handle();
-        System.out.println("Connected to AUTH_SERVER at " + new Date());
+        LOGGER.info("Connected to AUTH_SERVER");
     }
 
     private static void connectToChatServer() throws IOException {
         currentChatServerSession = new ClientSessionHandler(new Socket(CHAT_SERVER_HOST, CHAT_SERVER_PORT));
         currentChatServerSession.handle();
-        System.out.println("Connected to CHAT_SERVER at " + new Date());
+        LOGGER.info("Connected to CHAT_SERVER");
     }
 
     public static User getCurrentUser() {

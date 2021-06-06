@@ -1,5 +1,7 @@
-package ru.geekbrains.server.chat_server;
+package ru.geekbrains.chat_server.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.User;
 import ru.geekbrains.chat_common.SessionHandler;
@@ -11,6 +13,7 @@ import java.net.Socket;
 import java.util.Objects;
 
 public class ChatServerSessionHandler implements SessionHandler {
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private Socket socket;
     private ChatServer server;
     private DataInputStream inputStream;
@@ -23,9 +26,9 @@ public class ChatServerSessionHandler implements SessionHandler {
             this.server = chatServer;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
-            System.out.println("Handler created.");
+            LOGGER.info("Handler created (IP: " + socket.getInetAddress().getHostAddress() + ")");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("EXCEPTION!", e);
         }
     }
 
@@ -37,28 +40,25 @@ public class ChatServerSessionHandler implements SessionHandler {
     @Override
     public void close() {
         try {
-            System.out.println("Close session invoked");
             socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        } catch (IOException e) {/*do nothing*/}
     }
 
     private void readMessage() {
         try {
             while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String rawMessage = inputStream.readUTF();
-                System.out.println("Message received: " + rawMessage);
+                LOGGER.debug("Message received: " + rawMessage);
                 Message message = Message.messageFromJson(rawMessage);
                 switch (message.getMessageType()) {
                     case PUBLIC -> server.sendPublicMessage(rawMessage);
                     case PRIVATE -> server.sendPrivateMessage(rawMessage, message.getToUser());
                     case SUBSCRIBE_REQUEST -> server.subscribeUser(message.getFromUser(), this);
-                    default -> System.out.println("Incorrect message type: " + message.getMessageType());
+                    default -> LOGGER.warn("Incorrect message type: " + message.getMessageType());
                 }
             }
         } catch (IOException e) {
-            System.out.println("Handler closed at " + System.currentTimeMillis());
+            LOGGER.info("Handler closed (IP: " + socket.getInetAddress().getHostAddress() + ")");
         } finally {
             if (sessionUser != null && server.getUsersHandler(sessionUser).equals(this)) server.unsubscribeUser(sessionUser);
         }
@@ -66,9 +66,10 @@ public class ChatServerSessionHandler implements SessionHandler {
 
     public void sendMessage(String jsonMessage) {
         try {
+            LOGGER.debug("Message send: " + jsonMessage);
             outputStream.writeUTF(jsonMessage);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("EXCEPTION!", e);
         }
     }
 

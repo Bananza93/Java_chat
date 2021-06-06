@@ -1,10 +1,13 @@
-package ru.geekbrains.server.auth_server;
+package ru.geekbrains.auth_server.server;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.geekbrains.chat_common.Message;
 import ru.geekbrains.chat_common.MessageType;
 import ru.geekbrains.chat_common.User;
 import ru.geekbrains.chat_common.SessionHandler;
-import ru.geekbrains.server.auth_server.db.DatabaseManager;
+import ru.geekbrains.auth_server.db.DatabaseManager;
+import ru.geekbrains.auth_server.utils.AuthServer;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -18,6 +21,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class AuthServerSessionHandler implements SessionHandler {
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private Timer timeoutTimer;
     private Socket socket;
     private AuthServer server;
@@ -31,9 +35,9 @@ public class AuthServerSessionHandler implements SessionHandler {
             this.server = authServer;
             this.inputStream = new DataInputStream(socket.getInputStream());
             this.outputStream = new DataOutputStream(socket.getOutputStream());
-            System.out.println("Handler created.");
+            LOGGER.info("Handler created (IP: " + socket.getInetAddress().getHostAddress() + ")");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("EXCEPTION!", e);
         }
     }
 
@@ -71,7 +75,7 @@ public class AuthServerSessionHandler implements SessionHandler {
         try {
             while (!Thread.currentThread().isInterrupted() && !socket.isClosed()) {
                 String rawMessage = inputStream.readUTF();
-                System.out.println("Message received: " + rawMessage);
+                LOGGER.debug("Message received: " + rawMessage);
                 Message message = Message.messageFromJson(rawMessage);
                 switch (message.getMessageType()) {
                     case AUTH_REQUEST -> authenticateUser(message.getMessageBody());
@@ -79,11 +83,11 @@ public class AuthServerSessionHandler implements SessionHandler {
                     case CHANGE_PASSWORD_LOGIN_CHECK -> changeUserPasswordCheckLogin(message.getMessageBody());
                     case CHANGE_PASSWORD_REQUEST -> changeUserPassword(message.getMessageBody());
                     case CHANGE_USERNAME_REQUEST -> changeUserUsername(message.getMessageBody());
-                    default -> System.out.println("Incorrect message type: " + message.getMessageType());
+                    default -> LOGGER.warn("Incorrect message type: " + message.getMessageType());
                 }
             }
         } catch (IOException e) {
-            System.out.println("Handler closed at " + System.currentTimeMillis());
+            LOGGER.info("Handler closed (IP: " + socket.getInetAddress().getHostAddress() + ")");
         } finally {
             close();
         }
@@ -109,10 +113,10 @@ public class AuthServerSessionHandler implements SessionHandler {
         try {
             message.setMessageDate(new Date());
             String jsonMessage = message.messageToJson();
-            System.out.println("Message send: " + jsonMessage);
+            LOGGER.debug("Message send: " + jsonMessage);
             outputStream.writeUTF(jsonMessage);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("EXCEPTION!", e);
         }
     }
 

@@ -1,9 +1,8 @@
-package ru.geekbrains.server.auth_server;
+package ru.geekbrains.auth_server.utils;
 
+import ru.geekbrains.auth_server.server.AuthServerSessionHandler;
 import ru.geekbrains.chat_common.User;
-import ru.geekbrains.server.utils.Server;
 
-import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 
 public interface AuthServer extends Server {

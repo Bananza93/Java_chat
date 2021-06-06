@@ -2,6 +2,8 @@ package ru.geekbrains.chat_client.network;
 
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.geekbrains.chat_client.utils.MessageHistory;
 import ru.geekbrains.chat_client.ui.MainWindowsClientController;
 import ru.geekbrains.chat_client.ui.SubWindowsClientController;
@@ -14,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.Set;
 
 public class MessageProcessor {
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private static final MessageProcessor instance = new MessageProcessor();
     private static final User PUBLIC_TECH_USER = new User("PUBLIC", "", "");
     private final Object mon1 = new Object();
@@ -36,7 +39,7 @@ public class MessageProcessor {
     }
 
     public synchronized void incomingMessage(String jsonMessage) throws IOException {
-        System.out.println("Message received: " + jsonMessage);
+        LOGGER.debug("Message received: " + jsonMessage);
         Message message = Message.messageFromJson(jsonMessage);
         switch (message.getMessageType()) {
             case AUTH_FAILURE -> Platform.runLater(() -> {
@@ -103,7 +106,6 @@ public class MessageProcessor {
 
     public void outgoingMessage(String jsonMessage, ClientSessionHandler session) {
         synchronized (mon1) {
-            System.out.println("Message send: " + jsonMessage);
             session.sendMessage(jsonMessage);
         }
     }
@@ -116,7 +118,7 @@ public class MessageProcessor {
             try {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentChatServerSession());
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.debug("EXCEPTION!", e);
             }
         }).start();
     }
@@ -130,7 +132,7 @@ public class MessageProcessor {
             try {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentChatServerSession());
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.debug("EXCEPTION!", e);
             }
         }).start();
     }
@@ -142,7 +144,7 @@ public class MessageProcessor {
             try {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentChatServerSession());
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.debug("EXCEPTION!", e);
             }
         }).start();
     }
@@ -155,6 +157,7 @@ public class MessageProcessor {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
             } catch (IOException e) {
                 //mainWindowController.authWindowStateLabel.setText("Auth server unavailable.");
+                LOGGER.debug("EXCEPTION!", e);
             }
         }).start();
     }
@@ -166,7 +169,7 @@ public class MessageProcessor {
             try {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.debug("EXCEPTION!", e);
             }
         }).start();
     }
@@ -178,7 +181,7 @@ public class MessageProcessor {
             try {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.debug("EXCEPTION!", e);
             }
         }).start();
     }
@@ -190,7 +193,7 @@ public class MessageProcessor {
             try {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.debug("EXCEPTION!", e);
             }
         }).start();
     }
@@ -202,7 +205,7 @@ public class MessageProcessor {
             try {
                 outgoingMessage(message.messageToJson(), ConnectionManager.getCurrentAuthServerSession());
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.debug("EXCEPTION!", e);
             }
         }).start();
     }

@@ -1,5 +1,7 @@
 package ru.geekbrains.chat_client.utils;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import ru.geekbrains.chat_common.User;
 
 import java.io.*;
@@ -8,20 +10,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class MessageHistory {
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private static final String HIST_DIR = System.getenv("LOCALAPPDATA") + "\\POGGERS chat\\history\\";
     private static final int RETRIEVED_SIZE = 100;
     private static File history;
     private static User currentUser;
-    private static BufferedWriter br;
 
     private MessageHistory() {}
 
     public static void writeToHistory(String message) {
-        try {
-            br.write(message);
-            br.flush();
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(history, true))){
+            bw.write(message);
+            bw.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.debug("EXCEPTION!", e);
         }
     }
 
@@ -38,7 +40,7 @@ public class MessageHistory {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.debug("EXCEPTION!", e);
         }
         return result;
     }
@@ -48,19 +50,6 @@ public class MessageHistory {
         history = new File( HIST_DIR + currentUser.getLogin() + ".hist");
         if (!history.exists()) {
             new File(HIST_DIR).mkdirs();
-        }
-        try {
-            br = new BufferedWriter(new FileWriter(history, true));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void close() {
-        if (br != null) {
-            try {
-                br.close();
-            } catch (IOException e) {/*do nothing*/}
         }
     }
 }

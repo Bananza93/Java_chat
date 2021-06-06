@@ -1,6 +1,6 @@
-package ru.geekbrains.server;
+package ru.geekbrains.chat_server;
 
-import ru.geekbrains.server.chat_server.ChatServer;
+import ru.geekbrains.chat_server.server.ChatServer;
 
 public class ChatServerLauncher {
     public static void main(String[] args) {
