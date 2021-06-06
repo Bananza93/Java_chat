@@ -21,7 +21,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class AuthServerSessionHandler implements SessionHandler {
-    private static final Logger LOGGER = LogManager.getLogger(AuthServerWithDB.class);
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private Timer timeoutTimer;
     private Socket socket;
     private AuthServer server;

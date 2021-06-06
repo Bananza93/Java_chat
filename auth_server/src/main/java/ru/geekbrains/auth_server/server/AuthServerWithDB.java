@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class AuthServerWithDB implements AuthServer {
-    private static final Logger LOGGER = LogManager.getLogger(AuthServerWithDB.class);
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private static final int AUTH_SERVER_PORT = 22222;
     private static final String CHAT_SERVER_HOST = "localhost";
     private static final int CHAT_SERVER_PORT = 11111;

@@ -15,7 +15,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class ChatServer implements Server {
-    private static final Logger LOGGER = LogManager.getLogger(ChatServer.class);
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private static final int PORT = 11111;
     private final Map<User, ChatServerSessionHandler> onlineUsers;
     private final ExecutorService executorService;

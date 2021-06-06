@@ -2,12 +2,11 @@ package ru.geekbrains.auth_server.db;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ru.geekbrains.auth_server.server.AuthServerWithDB;
 
 import java.sql.*;
 
 public class DatabaseManager {
-    private static final Logger LOGGER = LogManager.getLogger(AuthServerWithDB.class);
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private Connection dbConnection;
     private PreparedStatement statement;
 

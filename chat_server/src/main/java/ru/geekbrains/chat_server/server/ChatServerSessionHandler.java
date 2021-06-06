@@ -13,7 +13,7 @@ import java.net.Socket;
 import java.util.Objects;
 
 public class ChatServerSessionHandler implements SessionHandler {
-    private static final Logger LOGGER = LogManager.getLogger(ChatServer.class);
+    private static final Logger LOGGER = LogManager.getRootLogger();
     private Socket socket;
     private ChatServer server;
     private DataInputStream inputStream;
